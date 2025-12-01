@@ -1,23 +1,23 @@
 # Lyzr Kit Specifications
 
-This directory contains the design specifications for the Lyzr Kit SDK.
+Design specifications for the Lyzr Kit SDK.
 
 ## Structure
 
 ```
 specs/
-├── concepts/                 # Core entity definitions
-│   ├── agent.md             # Agent entity + schema
-│   ├── tool.md              # Tool entity + schema
-│   └── feature.md           # Feature entity + schema
+├── concepts/                    # Core entity definitions
+│   ├── agent.md                # Agent entity + schema
+│   ├── tool.md                 # Tool entity + schema
+│   └── feature.md              # Feature entity + schema
 │
-├── implementation/          # Technical implementation details
-│   ├── commands.md          # CLI command specification
-│   ├── storage.md           # Local storage structure
-│   └── schema.md            # Schema evolution & migrations
+├── implementation/             # Technical details
+│   ├── commands.md             # CLI commands
+│   ├── storage.md              # Storage structure
+│   └── schema.md               # Schema evolution
 │
-└── phases/                  # Implementation roadmap
-    ├── phase-1-foundation.md   # Agents (without tools/features), CLI, storage
+└── phases/                     # Implementation roadmap
+    ├── phase-1-foundation.md   # Agents, CLI, storage
     ├── phase-2-agents.md       # Schema evolution
     ├── phase-3-tools.md        # Tools system
     └── phase-4-features.md     # Features system
@@ -25,18 +25,16 @@ specs/
 
 ## Reading Order
 
-### For Understanding the Product
+**For Product Understanding:**
+1. [concepts/agent.md](concepts/agent.md)
+2. [concepts/tool.md](concepts/tool.md)
+3. [concepts/feature.md](concepts/feature.md)
 
-1. Start with [concepts/agent.md](concepts/agent.md) - the core entity
-2. Read [concepts/tool.md](concepts/tool.md) - agent capabilities
-3. Read [concepts/feature.md](concepts/feature.md) - behavioral modifiers
-
-### For Implementation
-
-1. Review [implementation/commands.md](implementation/commands.md) - CLI commands
-2. Review [implementation/storage.md](implementation/storage.md) - local storage
-3. Review [implementation/schema.md](implementation/schema.md) - schema evolution
-4. Follow [phases/](phases/) for implementation order
+**For Implementation:**
+1. [implementation/commands.md](implementation/commands.md)
+2. [implementation/storage.md](implementation/storage.md)
+3. [implementation/schema.md](implementation/schema.md)
+4. [phases/](phases/)
 
 ## Key Decisions
 
@@ -60,7 +58,7 @@ specs/
 
 | Phase | Focus |
 |-------|-------|
-| Phase 1 | Agents (basic), CLI commands, storage |
-| Phase 2 | Schema evolution |
-| Phase 3 | Tools |
-| Phase 4 | Features |
+| 1 | Agents (basic), CLI, storage |
+| 2 | Schema evolution |
+| 3 | Tools |
+| 4 | Features |

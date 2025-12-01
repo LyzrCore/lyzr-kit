@@ -1,107 +1,66 @@
 # Lyzr Kit
 
-A Python SDK for building and deploying AI agents locally, powered by the Lyzr platform.
+A Python SDK for managing AI agents, tools, and features via the Lyzr platform.
 
 ## Overview
 
-Lyzr Kit (`lyzr-kit`) is a unified SDK that provides:
+Lyzr Kit (`lyzr-kit`) provides built-in definitions and lifecycle management for AI resources:
 
-- **Agent Management**: Create, configure, and run AI agents locally
-- **Tool System**: Extensible tools that agents can use
-- **Feature System**: Context, guards, and policies for agent behavior
-- **CLI**: Command-line interface (`lk`) for all operations
-- **Platform Integration**: Seamless connection to Lyzr's backend for LLM access
+| Resource | Description |
+|----------|-------------|
+| **Agent** | AI entity that processes prompts and generates responses |
+| **Tool** | Capability that agents can invoke (file_reader, calculator) |
+| **Feature** | Behavioral modifier: context, guards, policies |
 
-## Key Concepts
-
-| Concept | Description |
-|---------|-------------|
-| **Agent** | An AI entity that can process prompts and generate responses |
-| **Tool** | A capability that agents can invoke (e.g., file_reader, calculator) |
-| **Feature** | Behavioral modifiers: context (RAG), guards (validation), policies (rate limits) |
-| **Schema** | YAML definitions for agents, tools, and features |
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                      Lyzr Kit SDK                        │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │     CLI (lk)          │      SDK (lyzr_kit)     │    │
-│  │  Thin wrapper         │   Core business logic   │    │
-│  └─────────────────────────────────────────────────┘    │
-│                          │                               │
-│                          ▼                               │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │              Platform Client                     │    │
-│  │   HTTP client for agent.api.lyzr.app            │    │
-│  └─────────────────────────────────────────────────┘    │
-│                          │                               │
-└──────────────────────────┼───────────────────────────────┘
-                           │ HTTPS
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│              Lyzr Platform Backend                       │
-│   Providers: OpenAI, Anthropic, Bedrock, HuggingFace    │
-└─────────────────────────────────────────────────────────┘
-```
-
-## Quick Start
-
-### Installation
+## Installation
 
 ```bash
 pip install lyzr-kit
 ```
 
-### CLI Usage
+## CLI (`lk`)
+
+### Auth
 
 ```bash
-# Configure API key
-lk config set api_key your-lyzr-api-key
+lk auth                    # Save API key to .env
+```
 
+### Commands
+
+```bash
+lk <resource> <action> [id]
+```
+
+| Resource | Short | Actions |
+|----------|-------|---------|
+| `agent` | `a` | `ls`, `get`, `set` |
+| `tool` | `t` | `ls`, `get`, `set` |
+| `feature` | `f` | `ls`, `get`, `set` |
+
+### Examples
+
+```bash
 # List agents
-lk agent ls
+lk a ls
 
-# Run an agent
-lk run my-agent "Hello, how are you?"
+# Clone and activate an agent
+lk a get chat-agent
 
-# List tools
-lk tool ls
+# Update agent from YAML
+lk a set my-agent
 ```
 
-### SDK Usage
+## Storage
 
-```python
-from lyzr_kit import AgentManager
-from lyzr_kit.platform import PlatformClient
-
-# Initialize
-client = PlatformClient(api_key="your-api-key")
-manager = AgentManager(client=client)
-
-# Create and run an agent
-agent = await manager.create(
-    agent_type="chat",
-    name="my-assistant",
-    config={
-        "provider_id": "openai",
-        "model": "gpt-4",
-        "system_prompt": "You are a helpful assistant."
-    }
-)
-
-response = await agent.run("Hello!")
-print(response.content)
-```
+| Directory | Purpose |
+|-----------|---------|
+| `.lyzr-kit/` | Built-in resources (SDK-provided) |
+| `local-kit/` | Cloned resources (via `lk get`) |
 
 ## Documentation
 
-See the [specs/](specs/) directory for detailed specifications:
-
-- [Concepts](specs/concepts/) - Core entity definitions
-- [Implementation](specs/implementation/) - Technical design
-- [Phases](specs/phases/) - Implementation roadmap
+See [specs/](specs/) for detailed specifications.
 
 ## License
 
