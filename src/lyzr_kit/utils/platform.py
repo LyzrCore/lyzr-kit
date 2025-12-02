@@ -50,7 +50,7 @@ def get_provider_for_model(model: str) -> str:
     return "OpenAI"  # Default to OpenAI
 
 
-def _build_agent_payload(agent: Agent) -> dict:
+def _build_agent_payload(agent: Agent) -> dict[str, object]:
     """Build the API payload for agent create/update.
 
     Args:
