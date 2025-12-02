@@ -1,8 +1,8 @@
-# Phase 4: Features
+# Phase 5: Features
 
 ## Overview
 
-Phase 4 implements the feature system, enabling behavioral modifiers that extend or constrain agent behavior.
+Phase 5 implements the feature system, enabling behavioral modifiers that extend or constrain agent behavior.
 
 ## Goals
 
@@ -93,4 +93,4 @@ Input → Guards → Context → Policies → LLM → Guards → Policies → Ou
 
 ## Dependencies
 
-Requires Phase 1, Phase 2, and Phase 3 completion
+Requires Phase 1, Phase 2, Phase 3, and Phase 4 completion

@@ -1,8 +1,8 @@
-# Phase 3: Tools
+# Phase 4: Tools
 
 ## Overview
 
-Phase 3 implements the tool system, enabling agents to invoke tools for extended functionality.
+Phase 4 implements the tool system, enabling agents to invoke tools for extended functionality.
 
 ## Goals
 
@@ -87,4 +87,4 @@ tools:
 
 ## Dependencies
 
-Requires Phase 1 and Phase 2 completion
+Requires Phase 1, Phase 2, and Phase 3 completion
