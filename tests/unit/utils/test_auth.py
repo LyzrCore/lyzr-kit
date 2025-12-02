@@ -7,15 +7,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from lyzr_kit.utils.auth import (
+    ENV_MEMBERSTACK_TOKEN,
+    ENV_USER_ID,
+    ENV_VAR_NAME,
     AuthConfig,
     AuthError,
     get_api_headers,
     load_auth,
     require_auth,
     validate_auth,
-    ENV_VAR_NAME,
-    ENV_USER_ID,
-    ENV_MEMBERSTACK_TOKEN,
 )
 
 

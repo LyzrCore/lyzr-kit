@@ -4,7 +4,6 @@ These tests verify CLI behavior and argument parsing.
 For actual API integration tests, see tests/integration/test_agent_api.py
 """
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
