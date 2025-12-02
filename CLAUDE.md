@@ -92,8 +92,21 @@ lk --help              # CLI help
 |-------|-------|--------|
 | 1 | Agents (basic), CLI, storage | ✅ Done |
 | 2 | Schema evolution | Pending |
-| 3 | Tools | Stub |
-| 4 | Features | Stub |
+| 3 | Sub-agents (agent orchestration, delegation) | Pending |
+| 4 | Tools | Stub |
+| 5 | Features | Stub |
+
+### Phase 3: Sub-agents
+
+Agents can have a `sub_agents` array referencing other agent IDs for delegation/orchestration.
+
+**Cases to handle:**
+- Sub-agent exists locally (`local-kit/agents/<id>.yaml`)
+- Sub-agent exists in built-in collection
+- Sub-agent does not exist (error handling)
+- Circular dependency detection (A → B → A)
+- Sub-agent not yet deployed (needs `lk agent get` first)
+- Recursive deployment of sub-agents during parent `get`
 
 ## Specs
 

@@ -86,6 +86,16 @@ Shorthand: `lk a ls`, `lk a list`, `lk a get <id>`, `lk a set <id>`
 | `local-kit/agents/` | Your deployed agent configurations |
 | `.env` | API credentials (created by `lk auth`) |
 
+## Roadmap
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| 1 | Agents, CLI, storage | ✅ Done |
+| 2 | Schema evolution | Pending |
+| 3 | Sub-agents (orchestration) | Pending |
+| 4 | Tools | Pending |
+| 5 | Features | Pending |
+
 ## Development
 
 ```bash
