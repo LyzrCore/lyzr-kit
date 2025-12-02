@@ -117,9 +117,7 @@ class PlatformClient:
 
             # Create agent via v3 API
             url = f"{self.auth.base_url}/v3/agents/template/single-task"
-            response = httpx.post(
-                url, json=payload, headers=self._headers, timeout=30.0
-            )
+            response = httpx.post(url, json=payload, headers=self._headers, timeout=30.0)
 
             if response.status_code not in (200, 201):
                 raise Exception(f"{response.status_code} - {response.text}")
@@ -176,9 +174,7 @@ class PlatformClient:
 
             # Update agent via v3 API
             url = f"{self.auth.base_url}/v3/agents/template/single-task/{agent_id}"
-            response = httpx.put(
-                url, json=payload, headers=self._headers, timeout=30.0
-            )
+            response = httpx.put(url, json=payload, headers=self._headers, timeout=30.0)
 
             if response.status_code not in (200, 201):
                 raise Exception(f"{response.status_code} - {response.text}")
@@ -200,9 +196,7 @@ class PlatformClient:
         except Exception as e:
             raise PlatformError(f"Failed to update agent: {e}") from e
 
-    def _create_marketplace_app(
-        self, agent_id: str, name: str, description: str
-    ) -> str | None:
+    def _create_marketplace_app(self, agent_id: str, name: str, description: str) -> str | None:
         """Create an app on the marketplace for the agent.
 
         Args:

@@ -49,7 +49,9 @@ class Agent(BaseModel):
     # Platform IDs (set after agent creation on platform)
     platform_agent_id: str | None = Field(default=None, description="Agent ID on Lyzr platform")
     platform_env_id: str | None = Field(default=None, description="Environment ID on Lyzr platform")
-    marketplace_app_id: str | None = Field(default=None, description="Marketplace App ID for Studio chat")
+    marketplace_app_id: str | None = Field(
+        default=None, description="Marketplace App ID for Studio chat"
+    )
 
     # Model
     model: ModelConfig = Field(..., description="LLM model configuration")

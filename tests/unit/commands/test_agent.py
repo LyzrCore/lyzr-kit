@@ -96,9 +96,7 @@ class TestAgentGetErrors:
     @patch("lyzr_kit.modules.commands.agent.validate_auth")
     @patch("lyzr_kit.modules.commands.agent.load_auth")
     @patch("lyzr_kit.modules.commands.agent.PlatformClient")
-    def test_get_fails_on_platform_error(
-        self, mock_platform_class, mock_load_auth, mock_validate
-    ):
+    def test_get_fails_on_platform_error(self, mock_platform_class, mock_load_auth, mock_validate):
         """get should show platform error message on API failure."""
         from lyzr_kit.utils.auth import AuthConfig
         from lyzr_kit.utils.platform import PlatformError
@@ -117,9 +115,7 @@ class TestAgentGetErrors:
     @patch("lyzr_kit.modules.commands.agent.validate_auth")
     @patch("lyzr_kit.modules.commands.agent.load_auth")
     @patch("lyzr_kit.modules.commands.agent.PlatformClient")
-    def test_get_shows_marketplace_app_id(
-        self, mock_platform_class, mock_load_auth, mock_validate
-    ):
+    def test_get_shows_marketplace_app_id(self, mock_platform_class, mock_load_auth, mock_validate):
         """get should show marketplace app ID when available."""
         from lyzr_kit.utils.auth import AuthConfig
         from lyzr_kit.utils.platform import AgentResponse
