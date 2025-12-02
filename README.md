@@ -47,12 +47,12 @@ lk agent set chat-agent
 
 ```bash
 lk auth                    # Save API key to .env
-lk agent ls                # List all agents
+lk agent ls                # List all agents (alias: lk agent list)
 lk agent get <id>          # Deploy agent to platform
 lk agent set <id>          # Update agent on platform
 ```
 
-Shorthand: `lk a ls`, `lk a get <id>`, `lk a set <id>`
+Shorthand: `lk a ls`, `lk a list`, `lk a get <id>`, `lk a set <id>`
 
 ## Built-in Agents
 
