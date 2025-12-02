@@ -31,6 +31,7 @@ def _require_auth() -> AuthConfig:
 
 
 @app.command("ls")
+@app.command("list", hidden=True)
 def list_agents() -> None:
     """List all agents (built-in + cloned)."""
     storage = StorageManager()

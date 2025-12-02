@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lyzr-kit"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python SDK for managing AI agents, tools, and features via the Lyzr platform"
 readme = "README.md"
 license = "MIT"
