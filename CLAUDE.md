@@ -11,8 +11,8 @@ lyzr-kit is a Python SDK for managing AI agents, tools, and features via the Lyz
 | Concept | Description |
 |---------|-------------|
 | **Agent** | AI entity (chat, qa) with model config |
-| **Tool** | Capability agents can invoke |
-| **Feature** | Behavioral modifier (context, guard, policy) |
+| **Tool** | Capability agents can invoke (Phase 3) |
+| **Feature** | Behavioral modifier (Phase 4) |
 
 ## CLI Commands
 
@@ -24,62 +24,76 @@ lk <resource> <action> [id]
 | Resource | Short | Actions |
 |----------|-------|---------|
 | `agent` | `a` | `ls`, `get`, `set` |
-| `tool` | `t` | `ls`, `get`, `set` |
-| `feature` | `f` | `ls`, `get`, `set` |
+| `tool` | `t` | `ls`, `get`, `set` (stub) |
+| `feature` | `f` | `ls`, `get`, `set` (stub) |
 
 ## Storage
 
-| Directory | Purpose |
-|-----------|---------|
-| `.lyzr-kit/` | Built-in resources (SDK-provided) |
+| Location | Purpose |
+|----------|---------|
+| `src/lyzr_kit/collection/` | Built-in resources (bundled with package) |
 | `local-kit/` | Cloned resources (via `lk get`) |
 
 ## File Paths
 
 ```
-.lyzr-kit/agents/<id>.yaml      # Built-in agent
-local-kit/agents/<id>.yaml      # Cloned agent
-local-kit/tools/<id>.yaml       # Cloned tool
-local-kit/features/<id>.yaml    # Cloned feature
+src/lyzr_kit/collection/agents/<id>.yaml   # Built-in agent
+local-kit/agents/<id>.yaml                 # Cloned agent
+local-kit/tools/<id>.yaml                  # Cloned tool
+local-kit/features/<id>.yaml               # Cloned feature
 ```
 
-## Project Structure (Target)
+## Project Structure
 
 ```
 src/lyzr_kit/
 ├── __init__.py
-├── cli/                 # Click commands
-│   ├── main.py         # Entry point (lk)
-│   ├── agent.py        # lk agent commands
-│   ├── tool.py         # lk tool commands
-│   └── feature.py      # lk feature commands
-├── agents/
-│   └── schema.py       # Agent Pydantic model
-├── tools/
-│   └── schema.py       # Tool Pydantic model
-├── features/
-│   └── schema.py       # Feature Pydantic model
-└── core/
-    ├── loader.py       # SchemaLoader with legacy patterns
-    └── storage.py      # Storage path management
+├── schemas/             # Pydantic models
+│   ├── agent.py        # Agent schema (full)
+│   ├── tool.py         # Tool schema (stub)
+│   └── feature.py      # Feature schema (stub)
+├── collection/          # Built-in resources
+│   ├── agents/         # chat-agent.yaml, qa-agent.yaml
+│   ├── tools/          # (empty, Phase 3)
+│   └── features/       # (empty, Phase 4)
+├── modules/
+│   ├── cli/
+│   │   └── main.py     # Typer app entry point
+│   ├── commands/       # CLI command implementations
+│   │   ├── agent.py    # ls, get, set
+│   │   ├── tool.py     # stub
+│   │   ├── feature.py  # stub
+│   │   └── auth.py     # API key management
+│   └── storage/
+│       └── manager.py  # StorageManager class
+└── utils/              # Shared utilities
+
+tests/
+├── conftest.py         # Shared fixtures (temp_workdir)
+└── unit/
+    └── commands/       # CLI command unit tests
+        ├── test_agent.py
+        ├── test_tool.py
+        ├── test_feature.py
+        └── test_auth.py
 ```
 
 ## Build Commands
 
 ```bash
 pip install -e .        # Install in dev mode
-pytest                  # Run tests
+pytest tests/ -v        # Run tests
 lk --help              # CLI help
 ```
 
 ## Implementation Phases
 
-| Phase | Focus |
-|-------|-------|
-| 1 | Agents (basic), CLI, storage |
-| 2 | Schema evolution |
-| 3 | Tools |
-| 4 | Features |
+| Phase | Focus | Status |
+|-------|-------|--------|
+| 1 | Agents (basic), CLI, storage | ✅ Done |
+| 2 | Schema evolution | Pending |
+| 3 | Tools | Stub |
+| 4 | Features | Stub |
 
 ## Specs
 

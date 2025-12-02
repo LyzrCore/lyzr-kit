@@ -52,6 +52,7 @@ coverage.xml
 
 # Environments
 .env
+.env.example
 .venv
 env/
 venv/
@@ -80,4 +81,4 @@ dmypy.json
 .ruff_cache/
 
 # Local storage
-~/.lyzr-kit/
+local-kit/

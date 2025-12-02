@@ -1,16 +1,6 @@
 # Lyzr Kit
 
-A Python SDK for managing AI agents, tools, and features via the Lyzr platform.
-
-## Overview
-
-Lyzr Kit (`lyzr-kit`) provides built-in definitions and lifecycle management for AI resources:
-
-| Resource | Description |
-|----------|-------------|
-| **Agent** | AI entity that processes prompts and generates responses |
-| **Tool** | Capability that agents can invoke (file_reader, calculator) |
-| **Feature** | Behavioral modifier: context, guards, policies |
+A Python SDK for managing AI agents via the Lyzr platform.
 
 ## Installation
 
@@ -18,49 +8,99 @@ Lyzr Kit (`lyzr-kit`) provides built-in definitions and lifecycle management for
 pip install lyzr-kit
 ```
 
-## CLI (`lk`)
+## Quick Start
 
-### Auth
+### 1. Authenticate
+
+```bash
+lk auth
+```
+
+Enter your Lyzr API key when prompted. Get your API key from [Lyzr Studio](https://studio.lyzr.ai).
+
+### 2. List Available Agents
+
+```bash
+lk agent ls
+```
+
+### 3. Deploy an Agent
+
+```bash
+lk agent get chat-agent
+```
+
+This will:
+- Create the agent on the Lyzr platform
+- Save the configuration to `local-kit/agents/chat-agent.yaml`
+- Output URLs for the Platform, Chat interface, and API endpoint
+
+### 4. Modify and Update
+
+Edit `local-kit/agents/chat-agent.yaml`, then:
+
+```bash
+lk agent set chat-agent
+```
+
+## CLI Reference
 
 ```bash
 lk auth                    # Save API key to .env
+lk agent ls                # List all agents
+lk agent get <id>          # Deploy agent to platform
+lk agent set <id>          # Update agent on platform
 ```
 
-### Commands
+Shorthand: `lk a ls`, `lk a get <id>`, `lk a set <id>`
 
-```bash
-lk <resource> <action> [id]
-```
+## Built-in Agents
 
-| Resource | Short | Actions |
-|----------|-------|---------|
-| `agent` | `a` | `ls`, `get`, `set` |
-| `tool` | `t` | `ls`, `get`, `set` |
-| `feature` | `f` | `ls`, `get`, `set` |
+| ID | Name | Category |
+|----|------|----------|
+| `chat-agent` | Chat Assistant | chat |
+| `qa-agent` | Q&A Agent | qa |
+| `email-composer` | Email Composer | chat |
+| `code-reviewer` | Code Reviewer | qa |
+| `summarizer` | Text Summarizer | qa |
+| `translator` | Language Translator | qa |
+| `task-planner` | Task Planner | chat |
+| `data-analyst` | Data Analyst | qa |
+| `sql-expert` | SQL Expert | qa |
+| `research-assistant` | Research Assistant | chat |
+| `content-writer` | Content Writer | chat |
+| `customer-support` | Customer Support Agent | chat |
 
-### Examples
+## Environment Variables
 
-```bash
-# List agents
-lk a ls
-
-# Clone and activate an agent
-lk a get chat-agent
-
-# Update agent from YAML
-lk a set my-agent
-```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `LYZR_API_KEY` | Yes | API key for Lyzr platform |
+| `LYZR_USER_ID` | No | User ID for marketplace features |
+| `LYZR_MEMBERSTACK_TOKEN` | No | Token for marketplace app creation |
 
 ## Storage
 
 | Directory | Purpose |
 |-----------|---------|
-| `.lyzr-kit/` | Built-in resources (SDK-provided) |
-| `local-kit/` | Cloned resources (via `lk get`) |
+| `local-kit/agents/` | Your deployed agent configurations |
+| `.env` | API credentials (created by `lk auth`) |
 
-## Documentation
+## Development
 
-See [specs/](specs/) for detailed specifications.
+```bash
+# Install with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/ -v
+
+# Run linter
+ruff check src/
+
+# Type check
+mypy src/
+```
 
 ## License
 
