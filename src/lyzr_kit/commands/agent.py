@@ -13,30 +13,30 @@ app = typer.Typer(no_args_is_help=True)
 @app.command("ls")
 @app.command("list", hidden=True)
 def ls() -> None:
-    """List all agents (built-in + cloned)."""
+    """List available agents."""
     list_agents()
 
 
 @app.command("get")
 def get(
-    source_id: str = typer.Argument(..., help="Built-in agent ID or serial number"),
-    new_id: str = typer.Argument(None, help="New ID for the cloned agent"),
+    source_id: str = typer.Argument(..., help="Built-in agent ID or serial (#)"),
+    new_id: str = typer.Argument(None, help="Your new agent ID"),
 ) -> None:
-    """Clone a built-in agent to agents/<new-id>.yaml and create on platform."""
+    """Deploy an agent from built-in templates."""
     get_agent(source_id, new_id)
 
 
 @app.command("set")
 def set_cmd(
-    identifier: str = typer.Argument(..., help="Local agent ID or serial number"),
+    identifier: str = typer.Argument(..., help="Your agent ID or serial (#)"),
 ) -> None:
-    """Update a local agent on platform from agents/<id>.yaml."""
+    """Push local changes to platform."""
     set_agent(identifier)
 
 
 @app.command("chat")
 def chat(
-    identifier: str = typer.Argument(..., help="Local agent ID or serial number"),
+    identifier: str = typer.Argument(..., help="Your agent ID or serial (#)"),
 ) -> None:
-    """Start interactive chat session with a local agent."""
+    """Chat with an agent."""
     chat_with_agent(identifier)

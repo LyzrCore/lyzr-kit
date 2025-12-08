@@ -41,11 +41,7 @@ def _update_env_value(env_path: Path, key: str, value: str) -> None:
 
 
 def auth() -> None:
-    """Configure Lyzr authentication credentials.
-
-    Prompts for API key, User ID, and Memberstack token.
-    Get your credentials from https://studio.lyzr.ai
-    """
+    """Set up API credentials (.env file)."""
     try:
         env_path = Path.cwd() / ".env"
     except (FileNotFoundError, OSError):

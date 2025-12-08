@@ -227,7 +227,7 @@ class TestAgentHelp:
         result = runner.invoke(app, ["agent", "set", "--help"])
         assert result.exit_code == 0
         assert "IDENTIFIER" in result.output
-        assert "Local agent" in result.output  # Shows local agent context
+        assert "Push local changes" in result.output
 
 
 class TestAgentGetSerialNumbers:
@@ -624,8 +624,7 @@ class TestAgentChat:
         result = runner.invoke(app, ["agent", "chat", "--help"])
         assert result.exit_code == 0
         assert "IDENTIFIER" in result.output
-        assert "Local agent" in result.output  # Shows local agent context
-        assert "chat" in result.output.lower() or "session" in result.output.lower()
+        assert "Chat with" in result.output
 
     @patch("lyzr_kit.commands._auth_helper.load_auth")
     def test_chat_fails_without_auth(self, mock_load_auth):
