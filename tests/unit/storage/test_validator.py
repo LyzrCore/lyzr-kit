@@ -4,6 +4,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from lyzr_kit.schemas.agent import Agent
 from lyzr_kit.storage.validator import (
     ValidationResult,
     format_schema_errors,
@@ -11,7 +12,6 @@ from lyzr_kit.storage.validator import (
     validate_agent_yaml_file,
     validate_agents_folder,
 )
-from lyzr_kit.schemas.agent import Agent
 
 
 class TestValidateAgentsFolder:

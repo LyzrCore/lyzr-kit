@@ -18,11 +18,11 @@ from pathlib import Path
 
 import httpx
 import pytest
+from typer.testing import CliRunner
 
 from lyzr_kit.main import app
 from lyzr_kit.storage.manager import StorageManager
 from lyzr_kit.utils.auth import load_auth
-from typer.testing import CliRunner
 
 runner = CliRunner()
 
@@ -154,9 +154,9 @@ class TestE2EAgentLifecycle:
         if original_temp in content:
             updated_content = content.replace(original_temp, new_temp)
             local_file.write_text(updated_content)
-            print(f"Updated temperature from 0.7 to 0.5")
+            print("Updated temperature from 0.7 to 0.5")
         else:
-            print(f"Original temperature not found, skipping modification")
+            print("Original temperature not found, skipping modification")
 
         # Step 3: Update on platform
         print("\n=== Step 3: Update on platform ===")

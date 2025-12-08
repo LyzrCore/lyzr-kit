@@ -6,6 +6,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import httpx
 import typer
@@ -190,10 +191,7 @@ def _build_agent_box(state: StreamState, timestamp: str) -> Panel:
         content_parts.append(error_text)
 
     # Combine all parts
-    if content_parts:
-        combined = Group(*content_parts)
-    else:
-        combined = Text("...", style="dim")
+    combined: Group | Text = Group(*content_parts) if content_parts else Text("...", style="dim")
 
     # Determine border style based on error state
     is_error_only = state.error and not state.content
@@ -287,7 +285,7 @@ def _stream_chat_message(
         try:
             import websockets
 
-            async def _ws_loop():
+            async def _ws_loop() -> None:
                 try:
                     url = f"{WEBSOCKET_BASE_URL}/ws/{session_id}?x-api-key={auth.api_key}"
                     async with websockets.connect(url, close_timeout=2) as ws:
@@ -329,7 +327,9 @@ def _stream_chat_message(
                 console.print(_build_agent_box(state, timestamp))
                 return
 
-            with Live(_build_agent_box(state, timestamp), console=console, refresh_per_second=10) as live:
+            with Live(
+                _build_agent_box(state, timestamp), console=console, refresh_per_second=10
+            ) as live:
                 for line in response.iter_lines():
                     # Merge WebSocket events
                     while ws_events:
@@ -367,7 +367,9 @@ def _stream_chat_message(
                                 ChatEvent(
                                     event_type="thinking",
                                     timestamp=datetime.now(),
-                                    message=thinking[:100] + "..." if len(thinking) > 100 else thinking,
+                                    message=thinking[:100] + "..."
+                                    if len(thinking) > 100
+                                    else thinking,
                                 )
                             )
 
@@ -485,20 +487,20 @@ def chat_with_agent(identifier: str) -> None:
 
     @bindings.add(Keys.ControlLeft)  # Ctrl+Left - move word backward
     @bindings.add("escape", "b")  # Option+Left on macOS (sends Escape+b)
-    def _(event):
+    def _move_word_backward(event: Any) -> None:
         """Move cursor to the beginning of the previous word."""
         buff = event.current_buffer
         buff.cursor_position += buff.document.find_previous_word_beginning() or 0
 
     @bindings.add(Keys.ControlRight)  # Ctrl+Right - move word forward
     @bindings.add("escape", "f")  # Option+Right on macOS (sends Escape+f)
-    def _(event):
+    def _move_word_forward(event: Any) -> None:
         """Move cursor to the end of the next word."""
         buff = event.current_buffer
         buff.cursor_position += buff.document.find_next_word_ending() or 0
 
     @bindings.add("escape", Keys.Backspace)  # Option+Backspace - delete word backward
-    def _(event):
+    def _delete_word_backward(event: Any) -> None:
         """Delete the word before the cursor."""
         buff = event.current_buffer
         pos = buff.document.find_previous_word_beginning() or 0
@@ -506,7 +508,7 @@ def chat_with_agent(identifier: str) -> None:
             buff.delete_before_cursor(count=-pos)
 
     @bindings.add("escape", "d")  # Option+Delete / Alt+D - delete word forward
-    def _(event):
+    def _delete_word_forward(event: Any) -> None:
         """Delete the word after the cursor."""
         buff = event.current_buffer
         pos = buff.document.find_next_word_ending() or 0
@@ -514,11 +516,13 @@ def chat_with_agent(identifier: str) -> None:
             buff.delete(count=pos)
 
     # Create a prompt session with history and key bindings
-    prompt_style = Style.from_dict({
-        "prompt": "cyan",
-    })
+    prompt_style = Style.from_dict(
+        {
+            "prompt": "cyan",
+        }
+    )
     history = InMemoryHistory()
-    session = PromptSession(
+    prompt_session: PromptSession[str] = PromptSession(
         history=history,
         style=prompt_style,
         key_bindings=bindings,
@@ -530,7 +534,7 @@ def chat_with_agent(identifier: str) -> None:
     while True:
         try:
             # Get user input with full readline support (arrow keys, history, etc.)
-            user_input = session.prompt([("class:prompt", "> ")])
+            user_input = prompt_session.prompt([("class:prompt", "> ")])
 
             # Record timestamp immediately on submit
             timestamp = _format_timestamp()

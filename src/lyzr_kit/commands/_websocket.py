@@ -1,10 +1,12 @@
 """WebSocket client for real-time event streaming."""
 
 import asyncio
+import contextlib
 import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 import websockets
 from websockets.exceptions import ConnectionClosed, WebSocketException
@@ -23,11 +25,11 @@ class ChatEvent:
     event_type: str
     timestamp: datetime
     function_name: str | None = None
-    arguments: dict | None = None
+    arguments: dict[str, Any] | None = None
     response: str | None = None
     level: str = "INFO"
     message: str = ""
-    data: dict | None = None  # Additional payload data
+    data: dict[str, Any] | None = None  # Additional payload data
 
     def format_display(self) -> str:
         """Format event for terminal display."""
@@ -136,10 +138,10 @@ class ChatEvent:
             return "(empty)"
         # Clean up JSON responses
         resp = resp.strip()
-        if resp.startswith("{") or resp.startswith("["):
+        is_json = resp.startswith("{") or resp.startswith("[")
+        if is_json and len(resp) > max_len:
             # For JSON, just show a preview
-            if len(resp) > max_len:
-                return resp[:max_len - 3] + "..."
+            return resp[: max_len - 3] + "..."
         if len(resp) <= max_len:
             return resp
         return resp[: max_len - 3] + "..."
@@ -152,7 +154,7 @@ class EventState:
     events: list[ChatEvent] = field(default_factory=list)
     is_connected: bool = False
     error: str | None = None
-    _seen_hashes: set = field(default_factory=set)
+    _seen_hashes: set[int] = field(default_factory=set)
 
     def add_event(self, event: ChatEvent) -> bool:
         """Add event if not a duplicate. Returns True if added."""
@@ -173,7 +175,7 @@ class EventState:
         self.error = None
 
 
-def parse_event(data: dict, debug: bool = False) -> ChatEvent | None:
+def parse_event(data: dict[str, Any], debug: bool = False) -> ChatEvent | None:
     """Parse raw WebSocket message into ChatEvent.
 
     Args:
@@ -195,6 +197,7 @@ def parse_event(data: dict, debug: bool = False) -> ChatEvent | None:
     """
     if debug:
         import sys
+
         print(f"[DEBUG WS] {json.dumps(data, indent=2, default=str)}", file=sys.stderr)
 
     event_type = data.get("event_type", "")
@@ -263,10 +266,8 @@ async def connect_websocket(
                 try:
                     data = json.loads(message)
                     event = parse_event(data)
-                    if event:
-                        if state.add_event(event):
-                            if on_event:
-                                on_event(event)
+                    if event and state.add_event(event) and on_event:
+                        on_event(event)
                 except json.JSONDecodeError:
                     continue
 
@@ -287,7 +288,7 @@ class WebSocketClient:
         self.session_id = session_id
         self.api_key = api_key
         self.state = EventState()
-        self._task: asyncio.Task | None = None
+        self._task: asyncio.Task[None] | None = None
         self._on_event: Callable[[ChatEvent], None] | None = None
 
     def set_event_callback(self, callback: Callable[[ChatEvent], None]) -> None:
@@ -304,10 +305,8 @@ class WebSocketClient:
         """Stop WebSocket connection."""
         if self._task:
             self._task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._task
-            except asyncio.CancelledError:
-                pass
             self._task = None
         self.state.is_connected = False
 

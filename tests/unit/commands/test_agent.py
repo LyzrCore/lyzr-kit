@@ -121,7 +121,9 @@ class TestAgentLs:
         local_table_pos = output.find("Your Agents")
 
         # Built-in table should appear before local table
-        assert builtin_table_pos < local_table_pos, "Built-in Agents table should appear before Your Agents table"
+        assert builtin_table_pos < local_table_pos, (
+            "Built-in Agents table should appear before Your Agents table"
+        )
 
     @patch("lyzr_kit.commands.agent_list.validate_agents_folder")
     @patch("lyzr_kit.commands.agent_list.StorageManager")
@@ -946,9 +948,7 @@ class TestWebSocketHelpers:
         from lyzr_kit.commands._websocket import ChatEvent, EventState
 
         state = EventState()
-        state.add_event(
-            ChatEvent(event_type="test", timestamp=datetime.now())
-        )
+        state.add_event(ChatEvent(event_type="test", timestamp=datetime.now()))
         state.error = "test error"
 
         state.clear()

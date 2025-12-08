@@ -44,10 +44,10 @@ def auth() -> None:
     """Set up API credentials (.env file)."""
     try:
         env_path = Path.cwd() / ".env"
-    except (FileNotFoundError, OSError):
+    except (FileNotFoundError, OSError) as e:
         console.print("[red]Error: Current directory not found[/red]")
         console.print("[dim]Please run this command from a valid directory.[/dim]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
     console.print("\n[bold]Lyzr Authentication Setup[/bold]")
     console.print("[dim]Get your credentials from https://studio.lyzr.ai[/dim]\n")
@@ -78,9 +78,7 @@ def auth() -> None:
         console.print("[dim]Skipped Org ID[/dim]")
 
     # Prompt for Memberstack token (optional)
-    memberstack_token = typer.prompt(
-        "Enter your Memberstack token", default="", show_default=False
-    )
+    memberstack_token = typer.prompt("Enter your Memberstack token", default="", show_default=False)
     if memberstack_token.strip():
         _update_env_value(env_path, ENV_VAR_MEMBERSTACK_TOKEN, memberstack_token.strip())
         console.print("[green]✓ Memberstack token saved[/green]")
