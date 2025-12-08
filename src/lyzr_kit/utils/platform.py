@@ -71,7 +71,7 @@ def _build_agent_payload(agent: Agent) -> dict[str, object]:
             {
                 "type": "SHORT_TERM_MEMORY",
                 "priority": 0,
-                "config": {"max_tries": 3},
+                "config": {},
             }
         ],
     }

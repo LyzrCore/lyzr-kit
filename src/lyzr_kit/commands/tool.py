@@ -1,8 +1,7 @@
-"""Feature CLI commands.
+"""Tool CLI commands.
 
-STUB: Feature commands will be fully implemented in Phase 4.
+TODO: Tool commands will be fully implemented in Phase 4.
 Currently, all commands return a placeholder message.
-See specs/phases/phase-4.md for details.
 """
 
 import typer
@@ -13,18 +12,18 @@ console = Console()
 
 
 @app.command("ls")
-def list_features() -> None:
-    """List all features (built-in + cloned)."""
+def list_tools() -> None:
+    """List all tools (built-in + cloned)."""
     console.print("[yellow]Not implemented (Phase 4)[/yellow]")
 
 
 @app.command("get")
-def get_feature(feature_id: str) -> None:
-    """Clone feature to local-kit/features/<id>.yaml."""
+def get_tool(tool_id: str) -> None:
+    """Clone tool to tools/<id>.yaml."""
     console.print("[yellow]Not implemented (Phase 4)[/yellow]")
 
 
 @app.command("set")
-def set_feature(feature_id: str) -> None:
-    """Update feature from local-kit/features/<id>.yaml."""
+def set_tool(tool_id: str) -> None:
+    """Update tool from tools/<id>.yaml."""
     console.print("[yellow]Not implemented (Phase 4)[/yellow]")

@@ -1,3 +1,4 @@
+serial: 7
 id: "email-composer"
 name: "Email Composer"
 description: "A professional email writer that crafts clear, effective business emails."

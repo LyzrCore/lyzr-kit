@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 # Constants
 ENV_VAR_NAME = "LYZR_API_KEY"
 ENV_USER_ID = "LYZR_USER_ID"
+ENV_ORG_ID = "LYZR_ORG_ID"
 ENV_MEMBERSTACK_TOKEN = "LYZR_MEMBERSTACK_TOKEN"
 API_BASE_URL = "https://agent-prod.studio.lyzr.ai"
 MARKETPLACE_BASE_URL = "https://marketplace-prod.studio.lyzr.ai"
@@ -25,6 +26,7 @@ class AuthConfig:
     marketplace_url: str = MARKETPLACE_BASE_URL
     studio_url: str = STUDIO_BASE_URL
     user_id: str | None = None
+    org_id: str | None = None
     memberstack_token: str | None = None
 
 
@@ -46,13 +48,18 @@ def load_auth() -> AuthConfig:
     env_path = Path(".env")
 
     if not env_path.exists():
+        try:
+            cwd = Path.cwd()
+        except (FileNotFoundError, OSError):
+            cwd = Path(".")
         raise AuthError(
             "Authentication required.\n"
+            f"  → No .env file found in: {cwd}\n"
             "  → Run 'lk auth' to save your API key.\n"
             "  → Get your API key from https://agent.api.lyzr.app"
         )
 
-    load_dotenv(env_path)
+    load_dotenv(env_path, override=True)
     api_key = os.getenv(ENV_VAR_NAME)
 
     if not api_key:
@@ -63,11 +70,13 @@ def load_auth() -> AuthConfig:
         )
 
     user_id = os.getenv(ENV_USER_ID)
+    org_id = os.getenv(ENV_ORG_ID)
     memberstack_token = os.getenv(ENV_MEMBERSTACK_TOKEN)
 
     return AuthConfig(
         api_key=api_key,
         user_id=user_id,
+        org_id=org_id,
         memberstack_token=memberstack_token,
     )
 

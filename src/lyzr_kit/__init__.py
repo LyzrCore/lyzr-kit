@@ -2,8 +2,8 @@
 
 __version__ = "0.1.0"
 
-from lyzr_kit.modules.storage.manager import StorageManager
 from lyzr_kit.schemas.agent import Agent, AgentConfig, ModelConfig
+from lyzr_kit.storage.manager import StorageManager
 
 __all__ = [
     "__version__",

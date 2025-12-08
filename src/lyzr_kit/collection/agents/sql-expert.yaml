@@ -1,3 +1,4 @@
+serial: 9
 id: "sql-expert"
 name: "SQL Expert"
 description: "A database expert that writes, optimizes, and explains SQL queries."

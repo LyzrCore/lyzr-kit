@@ -1,6 +1,6 @@
 # Lyzr Kit
 
-A Python SDK for managing AI agents via the Lyzr platform.
+Python SDK for managing AI agents via the Lyzr platform.
 
 ## Installation
 
@@ -10,107 +10,98 @@ pip install lyzr-kit
 
 ## Quick Start
 
-### 1. Authenticate
-
 ```bash
+# 1. Authenticate
 lk auth
-```
 
-Enter your Lyzr API key when prompted. Get your API key from [Lyzr Studio](https://studio.lyzr.ai).
-
-### 2. List Available Agents
-
-```bash
+# 2. List agents (two tables: Built-in + Your Agents)
 lk agent ls
+
+# 3. Deploy an agent
+lk agent get chat-agent my-assistant
+
+# 4. Chat with your agent
+lk agent chat my-assistant
+
+# 5. Modify and update
+# Edit agents/my-assistant.yaml, then:
+lk agent set my-assistant
 ```
 
-### 3. Deploy an Agent
+## Chat Experience
 
-```bash
-lk agent get chat-agent
-```
+- **Session box** - Shows agent name, model, session ID, timestamp
+- **Real-time activity** - WebSocket events stream inline (tool calls, memory, artifacts)
+- **Streaming responses** - Live markdown-rendered output
+- **Metrics footer** - Latency and token usage per response
+- **Keyboard shortcuts** - Full readline support (Option/Ctrl + arrows, history)
+- **Exit** - Type `/exit` or press `Ctrl+C`
 
-This will:
-- Create the agent on the Lyzr platform
-- Save the configuration to `local-kit/agents/chat-agent.yaml`
-- Output URLs for the Platform, Chat interface, and API endpoint
+## CLI Commands
 
-### 4. Modify and Update
+| Command | Description |
+|---------|-------------|
+| `lk auth` | Configure API credentials |
+| `lk agent ls` | List all agents |
+| `lk agent get <source> [id]` | Clone and deploy agent |
+| `lk agent set <id>` | Update agent on platform |
+| `lk agent chat <id>` | Interactive chat session |
 
-Edit `local-kit/agents/chat-agent.yaml`, then:
+**Shorthand**: `lk a ls`, `lk a get 1 my-agent`, etc.
 
-```bash
-lk agent set chat-agent
-```
-
-## CLI Reference
-
-```bash
-lk auth                    # Save API key to .env
-lk agent ls                # List all agents (alias: lk agent list)
-lk agent get <id>          # Deploy agent to platform
-lk agent set <id>          # Update agent on platform
-```
-
-Shorthand: `lk a ls`, `lk a list`, `lk a get <id>`, `lk a set <id>`
+**Serial numbers**: Context-aware lookup
+- `get` → Built-in agents (`lk agent get 1`)
+- `set`/`chat` → Your agents (`lk agent chat 1`)
 
 ## Built-in Agents
 
-| ID | Name | Category |
-|----|------|----------|
-| `chat-agent` | Chat Assistant | chat |
-| `qa-agent` | Q&A Agent | qa |
-| `email-composer` | Email Composer | chat |
-| `code-reviewer` | Code Reviewer | qa |
-| `summarizer` | Text Summarizer | qa |
-| `translator` | Language Translator | qa |
-| `task-planner` | Task Planner | chat |
-| `data-analyst` | Data Analyst | qa |
-| `sql-expert` | SQL Expert | qa |
-| `research-assistant` | Research Assistant | chat |
-| `content-writer` | Content Writer | chat |
-| `customer-support` | Customer Support Agent | chat |
+| # | ID | Category |
+|---|-----|----------|
+| 1 | `chat-agent` | chat |
+| 2 | `qa-agent` | qa |
+| 3 | `code-reviewer` | qa |
+| 4 | `content-writer` | chat |
+| 5 | `customer-support` | chat |
+| 6 | `data-analyst` | qa |
+| 7 | `email-composer` | chat |
+| 8 | `research-assistant` | chat |
+| 9 | `sql-expert` | qa |
+| 10 | `summarizer` | qa |
+| 11 | `task-planner` | chat |
+| 12 | `translator` | qa |
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `LYZR_API_KEY` | Yes | API key for Lyzr platform |
-| `LYZR_USER_ID` | No | User ID for marketplace features |
-| `LYZR_MEMBERSTACK_TOKEN` | No | Token for marketplace app creation |
+| Variable | Required |
+|----------|----------|
+| `LYZR_API_KEY` | Yes |
+| `LYZR_USER_ID` | No |
+| `LYZR_ORG_ID` | No |
+| `LYZR_MEMBERSTACK_TOKEN` | No |
 
 ## Storage
 
-| Directory | Purpose |
-|-----------|---------|
-| `local-kit/agents/` | Your deployed agent configurations |
-| `.env` | API credentials (created by `lk auth`) |
+- `agents/` - Your deployed agent configs
+- `.env` - API credentials
+
+## Development
+
+```bash
+pip install -e ".[dev]"
+pytest tests/ -v
+ruff check src/
+mypy src/
+```
 
 ## Roadmap
 
 | Phase | Focus | Status |
 |-------|-------|--------|
 | 1 | Agents, CLI, storage | ✅ Done |
-| 2 | Schema evolution | Pending |
-| 3 | Sub-agents (orchestration) | Pending |
+| 2 | Chat experience, WebSocket events | ✅ Done |
+| 3 | Sub-agents | Pending |
 | 4 | Tools | Pending |
 | 5 | Features | Pending |
-
-## Development
-
-```bash
-# Install with dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest tests/ -v
-
-# Run linter
-ruff check src/
-
-# Type check
-mypy src/
-```
 
 ## License
 

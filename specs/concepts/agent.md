@@ -13,20 +13,31 @@ An **Agent** is the core entity in Lyzr Kit. It represents an AI-powered assista
 
 ## Built-in Agents
 
-| ID | Category | Description |
-|----|----------|-------------|
-| `chat-agent` | chat | Default conversational agent |
-| `qa-agent` | qa | Default Q&A agent |
+| Serial | ID | Category | Description |
+|--------|-----|----------|-------------|
+| #1 | `chat-agent` | chat | Default conversational agent |
+| #2 | `qa-agent` | qa | Default Q&A agent |
+| #3 | `code-reviewer` | qa | Code review assistant |
+| #4 | `content-writer` | chat | Content creation assistant |
+| #5 | `customer-support` | chat | Customer support bot |
+| #6 | `data-analyst` | qa | Data analysis assistant |
+| #7 | `email-composer` | chat | Email writing assistant |
+| #8 | `research-assistant` | chat | Research and information gathering |
+| #9 | `sql-expert` | qa | SQL query assistant |
+| #10 | `summarizer` | qa | Text summarization agent |
+| #11 | `task-planner` | chat | Task planning assistant |
+| #12 | `translator` | qa | Language translation agent |
 
 ## Schema
 
 ### YAML Definition
 
 ```yaml
-# local-kit/agents/<agent-id>.yaml
+# agents/<agent-id>.yaml
 
 # ============ META ============
 id: "my-agent"                    # Unique identifier (kebab-case)
+serial: 1                         # Serial number (auto-assigned for local)
 name: "My Assistant"              # Display name
 description: "A helpful AI assistant"
 category: "chat"                  # chat | qa
@@ -40,6 +51,9 @@ updated_at: "2024-01-01T00:00:00Z"
 
 is_active: true                   # Set by 'lk agent get'
 endpoint: "https://agent.api.lyzr.app/v3/agent/abc123"  # Populated by 'get'
+platform_agent_id: "abc123"       # Platform agent ID
+platform_env_id: "env456"         # Platform environment ID
+marketplace_app_id: "app789"      # Marketplace app ID (optional)
 
 # ============ MODEL ============
 model:
@@ -98,6 +112,7 @@ model:
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `id` | string | Yes | - | Unique identifier (3-50 chars, kebab-case) |
+| `serial` | int | No | auto | Serial number (auto-assigned for local agents) |
 | `name` | string | Yes | - | Display name (1-100 chars) |
 | `description` | string | No | `""` | Agent description (max 1000 chars) |
 | `category` | enum | Yes | - | Agent category: chat, qa |
@@ -108,6 +123,9 @@ model:
 | `updated_at` | datetime | No | `null` | Last update timestamp |
 | `is_active` | bool | No | `false` | Set to true by `lk agent get` |
 | `endpoint` | string | No | `null` | Inference URL (populated by `get`) |
+| `platform_agent_id` | string | No | `null` | Platform agent ID |
+| `platform_env_id` | string | No | `null` | Platform environment ID |
+| `marketplace_app_id` | string | No | `null` | Marketplace app ID |
 
 #### Model Fields
 
@@ -141,9 +159,21 @@ model:
 
 | Operation | Description | CLI Command |
 |-----------|-------------|-------------|
-| **ls** | List all agents | `lk agent ls` |
-| **get** | Clone/activate agent | `lk agent get <id>` |
-| **set** | Update agent | `lk agent set <id>` |
+| **ls** | List all agents with prefixed serials | `lk agent ls` |
+| **get** | Clone and deploy agent | `lk agent get #1 my-agent` |
+| **set** | Update agent on platform | `lk agent set @1` |
+| **chat** | Interactive chat session | `lk agent chat @1` |
+
+## Serial Numbers
+
+| Type | Format | Example |
+|------|--------|---------|
+| Built-in | `#N` | `#1`, `#2`, `#3` |
+| Local | `@N` | `@1`, `@2`, `@3` |
+
+Serial numbers provide quick reference in CLI commands:
+- `lk agent get #1` - Clone built-in agent #1
+- `lk agent chat @1` - Chat with local agent @1
 
 ## Design Principles
 
@@ -151,3 +181,4 @@ model:
 2. **Endpoint-Based**: Agents execute via inference endpoints
 3. **Env-Based Vars**: All variables loaded from .env file
 4. **Platform-First**: Agents activated on Lyzr platform via `get`
+5. **Prefixed Serials**: `#N` for built-in, `@N` for local agents

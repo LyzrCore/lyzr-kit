@@ -7,26 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-12-08
+
+### Added
+- **Chat command** (`lk agent chat`) with full interactive experience
+- **Session box** - Displays agent name, model, session ID, timestamp
+- **Real-time WebSocket events** - Tool calls, memory updates, artifacts inline
+- **SSE streaming** - Live markdown-rendered responses
+- **Metrics footer** - Latency and token usage per response
+- **Keyboard shortcuts** - Full readline support (Option/Ctrl + arrows, history)
+- Built-in agents expanded: code-reviewer, content-writer, customer-support, data-analyst, email-composer, research-assistant, sql-expert, summarizer, task-planner, translator
+
+### Technical
+- `websockets>=12.0` dependency for WebSocket event streaming
+- `prompt_toolkit>=3.0` dependency for readline input
+- Daemon thread for graceful WebSocket shutdown
+- Context-aware serial number resolution
+
 ## [0.1.0] - 2024-12-02
 
 ### Added
 - Initial release of lyzr-kit SDK
-- CLI tool (`lk`) for managing agents, tools, and features
-- Agent management commands: `lk agent ls`, `lk agent get`, `lk agent set`
-- Tool commands (stub): `lk tool ls`, `lk tool get`, `lk tool set`
-- Feature commands (stub): `lk feature ls`, `lk feature get`, `lk feature set`
-- Authentication command: `lk auth`
-- Built-in agent collection: `chat-agent`, `qa-agent`
-- Pydantic schemas for agent validation
-- Storage manager for local-kit resources
-- Full test suite with pytest
+- CLI tool (`lk`) for managing agents
+- Commands: `lk agent ls`, `lk agent get`, `lk agent set`
+- Auth command: `lk auth`
+- Built-in agents: `chat-agent`, `qa-agent`
+- Pydantic schemas, StorageManager, YAML configs
 
 ### Technical
-- Python 3.10+ support
-- src-layout package structure
-- Typer CLI framework with Rich formatting
-- YAML-based resource definitions
+- Python 3.10+
+- Typer + Rich CLI
 - uv package manager support
 
-[Unreleased]: https://github.com/LyzrCore/lyzr-kit/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/LyzrCore/lyzr-kit/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/LyzrCore/lyzr-kit/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/LyzrCore/lyzr-kit/releases/tag/v0.1.0

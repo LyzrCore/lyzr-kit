@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from lyzr_kit.modules.cli.main import app
+from lyzr_kit.main import app
 
 runner = CliRunner()
 
@@ -60,14 +60,14 @@ class TestAuthCommand:
         assert result.exit_code == 0
         assert "API" in result.output or "key" in result.output.lower()
 
-    @patch("lyzr_kit.modules.commands.auth.typer.prompt", return_value="")
+    @patch("lyzr_kit.commands.auth.typer.prompt", return_value="")
     def test_auth_rejects_empty_key(self, mock_prompt):
         """auth should reject empty API key."""
         result = runner.invoke(app, ["auth"])
         assert result.exit_code == 1
         assert "empty" in result.output.lower()
 
-    @patch("lyzr_kit.modules.commands.auth.typer.prompt", return_value="   ")
+    @patch("lyzr_kit.commands.auth.typer.prompt", return_value="   ")
     def test_auth_rejects_whitespace_only_key(self, mock_prompt):
         """auth should reject whitespace-only API key."""
         result = runner.invoke(app, ["auth"])

@@ -1,3 +1,4 @@
+serial: 5
 id: "customer-support"
 name: "Customer Support Agent"
 description: "A friendly customer support agent that handles inquiries and resolves issues."

@@ -1,42 +1,42 @@
 """Unit tests for tool CLI commands.
 
-STUB: Tool commands will be fully implemented in Phase 3.
+TODO: Tool commands will be fully implemented in Phase 4.
 Currently, all commands return a placeholder message.
 """
 
 from typer.testing import CliRunner
 
-from lyzr_kit.modules.cli.main import app
+from lyzr_kit.main import app
 
 runner = CliRunner()
 
 
 class TestToolCommands:
-    """Tests for tool commands (Phase 3 stubs)."""
+    """Tests for tool commands (Phase 4 stubs)."""
 
     def test_tool_ls_stub(self):
-        """tool ls should show Phase 3 message."""
+        """tool ls should show Phase 4 message."""
         result = runner.invoke(app, ["tool", "ls"])
         assert result.exit_code == 0
-        assert "Phase 3" in result.output
+        assert "Phase 4" in result.output
 
     def test_tool_get_stub(self):
-        """tool get should show Phase 3 message."""
+        """tool get should show Phase 4 message."""
         result = runner.invoke(app, ["tool", "get", "calculator"])
         assert result.exit_code == 0
-        assert "Phase 3" in result.output
+        assert "Phase 4" in result.output
 
     def test_tool_set_stub(self):
-        """tool set should show Phase 3 message."""
+        """tool set should show Phase 4 message."""
         result = runner.invoke(app, ["tool", "set", "calculator"])
         assert result.exit_code == 0
-        assert "Phase 3" in result.output
+        assert "Phase 4" in result.output
 
     def test_tool_shorthand(self):
         """'lk t ls' should work as shorthand."""
         result = runner.invoke(app, ["t", "ls"])
         assert result.exit_code == 0
-        assert "Phase 3" in result.output
+        assert "Phase 4" in result.output
 
     def test_tool_help(self):
         """tool --help should show available subcommands."""

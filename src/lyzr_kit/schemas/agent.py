@@ -28,6 +28,9 @@ class AgentConfig(BaseModel):
 class Agent(BaseModel):
     """Agent entity definition."""
 
+    # Serial number for quick reference (DO NOT MODIFY for cloned agents)
+    serial: int | None = Field(default=None, description="Serial number for quick reference")
+
     # Meta
     id: str = Field(..., min_length=3, max_length=50, description="Unique identifier (kebab-case)")
     name: str = Field(..., min_length=1, max_length=100, description="Display name")

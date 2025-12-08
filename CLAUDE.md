@@ -4,113 +4,93 @@ Guidance for Claude Code when working with this repository.
 
 ## Project Overview
 
-lyzr-kit is a Python SDK for managing AI agents, tools, and features via the Lyzr platform.
-
-## Key Concepts
-
-| Concept | Description |
-|---------|-------------|
-| **Agent** | AI entity (chat, qa) with model config |
-| **Tool** | Capability agents can invoke (Phase 3) |
-| **Feature** | Behavioral modifier (Phase 4) |
+lyzr-kit is a Python SDK for managing AI agents via the Lyzr platform.
 
 ## CLI Commands
 
 ```bash
-lk auth                  # Save API key to .env
-lk <resource> <action> [id]
+lk auth                           # Configure API credentials
+lk agent ls                       # List agents (two tables)
+lk agent get <source> [new-id]    # Clone and deploy agent
+lk agent set <identifier>         # Update agent on platform
+lk agent chat <identifier>        # Interactive chat session
 ```
 
-| Resource | Short | Actions |
-|----------|-------|---------|
-| `agent` | `a` | `ls`, `get`, `set` |
-| `tool` | `t` | `ls`, `get`, `set` (stub) |
-| `feature` | `f` | `ls`, `get`, `set` (stub) |
+**Shorthand**: `lk a ls`, `lk a get 1 my-agent`, etc.
+
+**Serial numbers**: Context-aware
+- `get` → Built-in agents
+- `set`/`chat` → Your agents
 
 ## Storage
 
 | Location | Purpose |
 |----------|---------|
-| `src/lyzr_kit/collection/` | Built-in resources (bundled with package) |
-| `local-kit/` | Cloned resources (via `lk get`) |
-
-## File Paths
-
-```
-src/lyzr_kit/collection/agents/<id>.yaml   # Built-in agent
-local-kit/agents/<id>.yaml                 # Cloned agent
-local-kit/tools/<id>.yaml                  # Cloned tool
-local-kit/features/<id>.yaml               # Cloned feature
-```
+| `src/lyzr_kit/collection/agents/` | Built-in agents (bundled) |
+| `agents/` | User agents (via `lk agent get`) |
 
 ## Project Structure
 
 ```
 src/lyzr_kit/
-├── __init__.py
-├── schemas/             # Pydantic models
-│   ├── agent.py        # Agent schema (full)
-│   ├── tool.py         # Tool schema (stub)
-│   └── feature.py      # Feature schema (stub)
-├── collection/          # Built-in resources
-│   ├── agents/         # chat-agent.yaml, qa-agent.yaml
-│   ├── tools/          # (empty, Phase 3)
-│   └── features/       # (empty, Phase 4)
-├── modules/
-│   ├── cli/
-│   │   └── main.py     # Typer app entry point
-│   ├── commands/       # CLI command implementations
-│   │   ├── agent.py    # ls, get, set
-│   │   ├── tool.py     # stub
-│   │   ├── feature.py  # stub
-│   │   └── auth.py     # API key management
-│   └── storage/
-│       └── manager.py  # StorageManager class
-└── utils/              # Shared utilities
+├── main.py              # CLI entry point
+├── schemas/             # Pydantic models (agent.py, tool.py, feature.py)
+├── collection/agents/   # Built-in agent YAMLs
+├── commands/            # CLI implementations
+│   ├── _console.py      # Shared Rich console
+│   ├── _resolver.py     # Serial number resolver
+│   ├── _websocket.py    # WebSocket event streaming
+│   ├── agent.py         # Agent Typer app
+│   ├── agent_list.py    # ls command
+│   ├── agent_get.py     # get command
+│   ├── agent_set.py     # set command
+│   ├── agent_chat.py    # chat command (SSE + WebSocket)
+│   ├── auth.py          # auth command
+│   ├── tool.py          # stub
+│   └── feature.py       # stub
+├── storage/             # StorageManager, serialization, validation
+└── utils/               # auth.py, platform.py
 
 tests/
-├── conftest.py         # Shared fixtures (temp_workdir)
-└── unit/
-    └── commands/       # CLI command unit tests
-        ├── test_agent.py
-        ├── test_tool.py
-        ├── test_feature.py
-        └── test_auth.py
+├── unit/commands/       # Command tests
+├── unit/storage/        # Storage tests
+└── integration/         # E2E tests
 ```
+
+## Chat Implementation
+
+Key files for chat functionality:
+- `commands/agent_chat.py` - Main chat loop, UI boxes, SSE streaming
+- `commands/_websocket.py` - WebSocket client, event parsing
+
+Features:
+- Session box (agent info, model, session ID, timestamp)
+- Real-time WebSocket events (tool calls, memory, artifacts)
+- SSE streaming for responses
+- Metrics footer (latency, tokens)
+- prompt_toolkit for keyboard shortcuts
 
 ## Build Commands
 
 ```bash
-pip install -e .        # Install in dev mode
+pip install -e .        # Install dev mode
 pytest tests/ -v        # Run tests
-lk --help              # CLI help
+ruff check src/         # Lint
+mypy src/               # Type check
 ```
 
-## Implementation Phases
+## Phases
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| 1 | Agents (basic), CLI, storage | ✅ Done |
-| 2 | Schema evolution | Pending |
-| 3 | Sub-agents (agent orchestration, delegation) | Pending |
+| 1 | Agents, CLI, storage | ✅ Done |
+| 2 | Chat experience, WebSocket | ✅ Done |
+| 3 | Sub-agents | Pending |
 | 4 | Tools | Stub |
 | 5 | Features | Stub |
 
-### Phase 3: Sub-agents
-
-Agents can have a `sub_agents` array referencing other agent IDs for delegation/orchestration.
-
-**Cases to handle:**
-- Sub-agent exists locally (`local-kit/agents/<id>.yaml`)
-- Sub-agent exists in built-in collection
-- Sub-agent does not exist (error handling)
-- Circular dependency detection (A → B → A)
-- Sub-agent not yet deployed (needs `lk agent get` first)
-- Recursive deployment of sub-agents during parent `get`
-
 ## Specs
 
-See `specs/` for detailed specifications:
-- `specs/concepts/` - Entity definitions (agent, tool, feature)
-- `specs/implementation/` - Technical details (commands, storage, schema)
-- `specs/phases/` - Implementation roadmap
+- `specs/concepts/` - Entity definitions
+- `specs/implementation/` - Technical details
+- `specs/phases/` - Roadmap

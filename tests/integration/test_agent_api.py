@@ -1,9 +1,11 @@
 """Integration tests for agent API operations.
 
-These tests use the real Lyzr API and require valid credentials in tests/sandbox/.env.example.
-The test fixtures will copy .env.example to .env before running.
+These tests use the real Lyzr API and require valid credentials.
+Credentials are read from the root .env file (which is gitignored).
 
-Run with: uv run pytest tests/integration/ -v -s
+To run integration tests:
+1. Create .env in project root with LYZR_API_KEY, LYZR_USER_ID, LYZR_MEMBERSTACK_TOKEN
+2. Run: uv run pytest tests/integration/ -v -s
 """
 
 import shutil
@@ -12,39 +14,43 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from lyzr_kit.modules.cli.main import app
+from lyzr_kit.main import app
 
 runner = CliRunner()
 
-# Path to sandbox .env.example file
-SANDBOX_DIR = Path(__file__).parent.parent / "sandbox"
-SANDBOX_ENV_EXAMPLE = SANDBOX_DIR / ".env.example"
+# Path to root .env file (gitignored, contains real credentials)
+ROOT_DIR = Path(__file__).parent.parent.parent
+ROOT_ENV_FILE = ROOT_DIR / ".env"
 
 
-def _sandbox_env_has_api_key() -> bool:
-    """Check if sandbox .env.example has LYZR_API_KEY."""
-    if not SANDBOX_ENV_EXAMPLE.exists():
+def _has_valid_credentials() -> bool:
+    """Check if root .env has valid LYZR credentials."""
+    if not ROOT_ENV_FILE.exists():
         return False
-    content = SANDBOX_ENV_EXAMPLE.read_text()
-    return "LYZR_API_KEY=" in content
+    content = ROOT_ENV_FILE.read_text()
+    # Check for real API key (not placeholder)
+    has_api_key = "LYZR_API_KEY=" in content
+    is_placeholder = "test-placeholder" in content or "your-api-key" in content
+    return has_api_key and not is_placeholder
 
 
-# Skip all tests if no valid .env.example file in sandbox
+# Skip all tests if no valid credentials in root .env
 pytestmark = pytest.mark.skipif(
-    not _sandbox_env_has_api_key(),
-    reason="No valid .env.example file with LYZR_API_KEY in tests/sandbox/",
+    not _has_valid_credentials(),
+    reason="No valid .env file with LYZR credentials in project root. "
+    "Create .env with LYZR_API_KEY to run integration tests.",
 )
 
 
 @pytest.fixture(autouse=True)
-def clean_local_kit():
-    """Clean local-kit directory before and after each test."""
-    local_kit = Path.cwd() / "local-kit"
-    if local_kit.exists():
-        shutil.rmtree(local_kit)
+def clean_agents_dir():
+    """Clean agents directory before and after each test."""
+    agents_dir = Path.cwd() / "agents"
+    if agents_dir.exists():
+        shutil.rmtree(agents_dir)
     yield
-    if local_kit.exists():
-        shutil.rmtree(local_kit)
+    if agents_dir.exists():
+        shutil.rmtree(agents_dir)
 
 
 class TestAgentGet:
@@ -52,7 +58,7 @@ class TestAgentGet:
 
     def test_get_creates_agent_on_platform(self):
         """'lk agent get' should create agent on the platform."""
-        result = runner.invoke(app, ["agent", "get", "chat-agent"])
+        result = runner.invoke(app, ["agent", "get", "chat-agent", "my-chat-agent"])
 
         print(f"\n--- OUTPUT ---\n{result.output}\n--------------")
 
@@ -63,8 +69,8 @@ class TestAgentGet:
         assert "Chat URL:" in result.output
         assert "API Endpoint:" in result.output
 
-        # Verify local file was created with platform IDs
-        local_file = Path.cwd() / "local-kit" / "agents" / "chat-agent.yaml"
+        # Verify local file was created with platform IDs (using new_id)
+        local_file = Path.cwd() / "agents" / "my-chat-agent.yaml"
         assert local_file.exists()
 
         content = local_file.read_text()
@@ -75,19 +81,19 @@ class TestAgentGet:
 
     def test_get_fails_for_nonexistent_agent(self):
         """'lk agent get' should fail for agent not in collection."""
-        result = runner.invoke(app, ["agent", "get", "nonexistent-agent"])
+        result = runner.invoke(app, ["agent", "get", "nonexistent-agent", "my-new-agent"])
 
         assert result.exit_code == 1
         assert "not found" in result.output
 
     def test_get_fails_if_already_exists(self):
-        """'lk agent get' should fail if agent already exists in local-kit."""
+        """'lk agent get' should fail if new_id already exists."""
         # First get succeeds
-        result1 = runner.invoke(app, ["agent", "get", "qa-agent"])
+        result1 = runner.invoke(app, ["agent", "get", "qa-agent", "my-qa-agent"])
         assert result1.exit_code == 0
 
-        # Second get fails
-        result2 = runner.invoke(app, ["agent", "get", "qa-agent"])
+        # Second get with same new_id fails
+        result2 = runner.invoke(app, ["agent", "get", "chat-agent", "my-qa-agent"])
         assert result2.exit_code == 1
         assert "already exists" in result2.output
 
@@ -98,12 +104,12 @@ class TestAgentSet:
     def test_set_updates_agent_on_platform(self):
         """'lk agent set' should update agent on the platform."""
         # First create the agent
-        get_result = runner.invoke(app, ["agent", "get", "summarizer"])
+        get_result = runner.invoke(app, ["agent", "get", "summarizer", "my-summarizer"])
         print(f"\n--- GET OUTPUT ---\n{get_result.output}\n--------------")
         assert get_result.exit_code == 0
 
         # Then update it
-        set_result = runner.invoke(app, ["agent", "set", "summarizer"])
+        set_result = runner.invoke(app, ["agent", "set", "my-summarizer"])
         print(f"\n--- SET OUTPUT ---\n{set_result.output}\n--------------")
 
         assert set_result.exit_code == 0
@@ -113,7 +119,7 @@ class TestAgentSet:
         assert "Chat URL:" in set_result.output
 
     def test_set_fails_if_not_in_local(self):
-        """'lk agent set' should fail if agent not in local-kit."""
+        """'lk agent set' should fail if agent not in agents/."""
         result = runner.invoke(app, ["agent", "set", "chat-agent"])
 
         assert result.exit_code == 1
@@ -131,19 +137,21 @@ class TestAgentLs:
         assert "chat-agent" in result.output
         assert "qa-agent" in result.output
 
-    def test_ls_shows_local_agents_as_active(self):
-        """'lk agent ls' should show local agents as active."""
+    def test_ls_shows_local_agents_with_endpoint(self):
+        """'lk agent ls' should show local agents with their endpoint."""
         # First create a local agent
-        get_result = runner.invoke(app, ["agent", "get", "code-reviewer"])
+        get_result = runner.invoke(app, ["agent", "get", "code-reviewer", "my-code-reviewer"])
         assert get_result.exit_code == 0
 
-        # List should show it as active
+        # List should show it in Your Agents table with endpoint
         ls_result = runner.invoke(app, ["agent", "ls"])
         print(f"\n--- LS OUTPUT ---\n{ls_result.output}\n--------------")
 
         assert ls_result.exit_code == 0
-        assert "code-reviewer" in ls_result.output
-        assert "Yes" in ls_result.output  # Active column
+        assert "Your Agents" in ls_result.output
+        assert "my-code-reviewer" in ls_result.output
+        # Endpoint URL may be truncated in table output
+        assert "agent-prod.studio" in ls_result.output or "agent-prod" in ls_result.output
 
 
 class TestFullWorkflow:
@@ -153,14 +161,14 @@ class TestFullWorkflow:
         """Test the full workflow: get -> modify -> set."""
         # Step 1: Get agent from collection
         print("\n=== Step 1: Get agent ===")
-        get_result = runner.invoke(app, ["agent", "get", "translator"])
+        get_result = runner.invoke(app, ["agent", "get", "translator", "my-translator"])
         print(get_result.output)
         assert get_result.exit_code == 0
         assert "created successfully" in get_result.output
 
         # Step 2: Verify local file
         print("\n=== Step 2: Verify local file ===")
-        local_file = Path.cwd() / "local-kit" / "agents" / "translator.yaml"
+        local_file = Path.cwd() / "agents" / "my-translator.yaml"
         assert local_file.exists()
         content = local_file.read_text()
         print(f"Content preview:\n{content[:500]}...")
@@ -176,7 +184,7 @@ class TestFullWorkflow:
 
         # Step 4: Update on platform
         print("\n=== Step 4: Update on platform ===")
-        set_result = runner.invoke(app, ["agent", "set", "translator"])
+        set_result = runner.invoke(app, ["agent", "set", "my-translator"])
         print(set_result.output)
         assert set_result.exit_code == 0
         assert "updated successfully" in set_result.output
@@ -185,7 +193,9 @@ class TestFullWorkflow:
         print("\n=== Step 5: Verify in list ===")
         ls_result = runner.invoke(app, ["agent", "ls"])
         print(ls_result.output)
-        assert "translator" in ls_result.output
-        assert "Yes" in ls_result.output  # Active
+        assert "my-translator" in ls_result.output
+        assert "Your Agents" in ls_result.output  # Separate table for local agents
+        # Endpoint URL may be truncated in table output
+        assert "agent-prod.studio" in ls_result.output or "agent-prod" in ls_result.output
 
         print("\n=== Full workflow completed successfully! ===")

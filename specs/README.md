@@ -6,35 +6,22 @@ Design specifications for the Lyzr Kit SDK.
 
 ```
 specs/
-├── concepts/                    # Core entity definitions
-│   ├── agent.md                # Agent entity + schema
-│   ├── tool.md                 # Tool entity + schema
-│   └── feature.md              # Feature entity + schema
-│
-├── implementation/             # Technical details
-│   ├── commands.md             # CLI commands
-│   ├── storage.md              # Storage structure
-│   └── schema.md               # Schema evolution
-│
-└── phases/                     # Implementation roadmap
-    ├── phase-1-foundation.md   # Agents, CLI, storage
-    ├── phase-2-agents.md       # Schema evolution
-    ├── phase-3-tools.md        # Tools system
-    └── phase-4-features.md     # Features system
+├── concepts/           # Entity definitions (agent, tool, feature)
+├── implementation/     # Technical details (commands, storage, schema)
+└── phases/             # Implementation roadmap (phase-1 through phase-5)
 ```
 
-## Reading Order
+## CLI Commands
 
-**For Product Understanding:**
-1. [concepts/agent.md](concepts/agent.md)
-2. [concepts/tool.md](concepts/tool.md)
-3. [concepts/feature.md](concepts/feature.md)
+| Command | Description |
+|---------|-------------|
+| `lk auth` | Configure API credentials |
+| `lk agent ls` | List agents (two tables) |
+| `lk agent get <source> [id]` | Clone and deploy agent |
+| `lk agent set <id>` | Update agent on platform |
+| `lk agent chat <id>` | Interactive chat session |
 
-**For Implementation:**
-1. [implementation/commands.md](implementation/commands.md)
-2. [implementation/storage.md](implementation/storage.md)
-3. [implementation/schema.md](implementation/schema.md)
-4. [phases/](phases/)
+Serial numbers are context-aware (get → built-in, set/chat → local).
 
 ## Key Decisions
 
@@ -43,22 +30,14 @@ specs/
 | Package name | `lyzr-kit` |
 | CLI command | `lk` |
 | Config format | YAML |
-| Scope | Built-in definitions + lifecycle management |
-| Schema validation | Pydantic models |
-| Schema evolution | Structural detection, in-memory migration |
-
-## Storage
-
-| Directory | Purpose |
-|-----------|---------|
-| `.lyzr-kit/` | Built-in resources (SDK-provided) |
-| `local-kit/` | Cloned resources (via `lk get`) |
+| Schema validation | Pydantic |
 
 ## Phases
 
-| Phase | Focus |
-|-------|-------|
-| 1 | Agents (basic), CLI, storage |
-| 2 | Schema evolution |
-| 3 | Tools |
-| 4 | Features |
+| Phase | Focus | Status |
+|-------|-------|--------|
+| 1 | Agents, CLI, storage | ✅ Done |
+| 2 | Chat experience, WebSocket | ✅ Done |
+| 3 | Sub-agents | Pending |
+| 4 | Tools | Stub |
+| 5 | Features | Stub |
