@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2024-12-08
+
+### Added
+- **Default agent resource** - `agent` is now optional (`lk ls` = `lk agent ls`)
+
 ## [0.2.0] - 2024-12-08
 
 ### Added
-- **Chat command** (`lk agent chat`) with full interactive experience
+- **Chat command** (`lk chat`) with full interactive experience
 - **Session box** - Displays agent name, model, session ID, timestamp
 - **Real-time WebSocket events** - Tool calls, memory updates, artifacts inline
 - **SSE streaming** - Live markdown-rendered responses
@@ -39,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Typer + Rich CLI
 - uv package manager support
 
-[Unreleased]: https://github.com/LyzrCore/lyzr-kit/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/LyzrCore/lyzr-kit/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/LyzrCore/lyzr-kit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/LyzrCore/lyzr-kit/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/LyzrCore/lyzr-kit/releases/tag/v0.1.0

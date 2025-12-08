@@ -9,14 +9,14 @@ lyzr-kit is a Python SDK for managing AI agents via the Lyzr platform.
 ## CLI Commands
 
 ```bash
-lk auth                           # Configure API credentials
-lk agent ls                       # List agents (two tables)
-lk agent get <source> [new-id]    # Clone and deploy agent
-lk agent set <identifier>         # Update agent on platform
-lk agent chat <identifier>        # Interactive chat session
+lk auth                    # Configure API credentials
+lk ls                      # List agents (two tables)
+lk get <source> [new-id]   # Clone and deploy agent
+lk set <identifier>        # Update agent on platform
+lk chat <identifier>       # Interactive chat session
 ```
 
-**Shorthand**: `lk a ls`, `lk a get 1 my-agent`, etc.
+**Note**: `agent` resource is optional. `lk ls` = `lk agent ls` = `lk a ls`
 
 **Serial numbers**: Context-aware
 - `get` → Built-in agents

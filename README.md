@@ -15,17 +15,17 @@ pip install lyzr-kit
 lk auth
 
 # 2. List agents (two tables: Built-in + Your Agents)
-lk agent ls
+lk ls
 
 # 3. Deploy an agent
-lk agent get chat-agent my-assistant
+lk get chat-agent my-assistant
 
 # 4. Chat with your agent
-lk agent chat my-assistant
+lk chat my-assistant
 
 # 5. Modify and update
 # Edit agents/my-assistant.yaml, then:
-lk agent set my-assistant
+lk set my-assistant
 ```
 
 ## Chat Experience
@@ -42,16 +42,16 @@ lk agent set my-assistant
 | Command | Description |
 |---------|-------------|
 | `lk auth` | Configure API credentials |
-| `lk agent ls` | List all agents |
-| `lk agent get <source> [id]` | Clone and deploy agent |
-| `lk agent set <id>` | Update agent on platform |
-| `lk agent chat <id>` | Interactive chat session |
+| `lk ls` | List all agents |
+| `lk get <source> [id]` | Clone and deploy agent |
+| `lk set <id>` | Update agent on platform |
+| `lk chat <id>` | Interactive chat session |
 
-**Shorthand**: `lk a ls`, `lk a get 1 my-agent`, etc.
+**Note**: `agent` resource is optional. `lk ls` = `lk agent ls` = `lk a ls`
 
 **Serial numbers**: Context-aware lookup
-- `get` → Built-in agents (`lk agent get 1`)
-- `set`/`chat` → Your agents (`lk agent chat 1`)
+- `get` → Built-in agents (`lk get 1`)
+- `set`/`chat` → Your agents (`lk chat 1`)
 
 ## Built-in Agents
 

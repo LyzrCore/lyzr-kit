@@ -16,12 +16,12 @@ specs/
 | Command | Description |
 |---------|-------------|
 | `lk auth` | Configure API credentials |
-| `lk agent ls` | List agents (two tables) |
-| `lk agent get <source> [id]` | Clone and deploy agent |
-| `lk agent set <id>` | Update agent on platform |
-| `lk agent chat <id>` | Interactive chat session |
+| `lk ls` | List agents (two tables) |
+| `lk get <source> [id]` | Clone and deploy agent |
+| `lk set <id>` | Update agent on platform |
+| `lk chat <id>` | Interactive chat session |
 
-Serial numbers are context-aware (get → built-in, set/chat → local).
+`agent` resource is optional. Serial numbers are context-aware (get → built-in, set/chat → local).
 
 ## Key Decisions
 

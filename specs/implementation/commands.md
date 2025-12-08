@@ -3,12 +3,15 @@
 ## Command Structure
 
 ```
-lk <resource> <action> [args...]
+lk [resource] <action> [args...]
 ```
+
+`agent` resource is optional (default). All equivalent:
+- `lk ls` = `lk agent ls` = `lk a ls`
 
 | Resource | Short | Actions |
 |----------|-------|---------|
-| `agent` | `a` | `ls`, `get`, `set`, `chat` |
+| `agent` | `a` | `ls`, `get`, `set`, `chat` (default) |
 | `tool` | `t` | stub (Phase 4) |
 | `feature` | `f` | stub (Phase 5) |
 
@@ -16,10 +19,10 @@ lk <resource> <action> [args...]
 
 | Command | Description |
 |---------|-------------|
-| `lk agent ls` | List agents in two tables |
-| `lk agent get <source> [id]` | Clone and deploy to platform |
-| `lk agent set <id>` | Update from local YAML |
-| `lk agent chat <id>` | Interactive chat session |
+| `lk ls` | List agents in two tables |
+| `lk get <source> [id]` | Clone and deploy to platform |
+| `lk set <id>` | Update from local YAML |
+| `lk chat <id>` | Interactive chat session |
 
 ### Serial Number Context
 
