@@ -15,7 +15,8 @@ class TestAuthCommand:
 
     def test_auth_creates_env_file(self):
         """auth should create .env file with API key."""
-        result = runner.invoke(app, ["auth"], input="test-api-key-123\n")
+        # Provide: API key, User ID (skip), Org ID (skip), Memberstack token (skip)
+        result = runner.invoke(app, ["auth"], input="test-api-key-123\n\n\n\n")
         assert result.exit_code == 0
         assert "saved" in result.output.lower()
 
@@ -29,8 +30,8 @@ class TestAuthCommand:
         env_file = Path.cwd() / ".env"
         env_file.write_text("OTHER_VAR=value\nLYZR_API_KEY=old-key\n")
 
-        # Run auth
-        result = runner.invoke(app, ["auth"], input="new-api-key\n")
+        # Run auth - provide all 4 prompts (skip optional ones)
+        result = runner.invoke(app, ["auth"], input="new-api-key\n\n\n\n")
         assert result.exit_code == 0
 
         # Check updated
@@ -45,8 +46,8 @@ class TestAuthCommand:
         env_file = Path.cwd() / ".env"
         env_file.write_text("OTHER_VAR=value\n")
 
-        # Run auth
-        result = runner.invoke(app, ["auth"], input="my-api-key\n")
+        # Run auth - provide all 4 prompts (skip optional ones)
+        result = runner.invoke(app, ["auth"], input="my-api-key\n\n\n\n")
         assert result.exit_code == 0
 
         # Check appended
