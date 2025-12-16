@@ -426,15 +426,17 @@ class TestAgentGetErrors:
         """get should cancel when user says no."""
         from unittest.mock import patch
 
-        with patch("lyzr_kit.commands._auth_helper.validate_auth", return_value=True):
-            with patch("lyzr_kit.commands._auth_helper.load_auth") as mock_load:
-                from lyzr_kit.utils.auth import AuthConfig
+        from lyzr_kit.utils.auth import AuthConfig
 
-                mock_load.return_value = AuthConfig(api_key="test-key")
+        with (
+            patch("lyzr_kit.commands._auth_helper.validate_auth", return_value=True),
+            patch("lyzr_kit.commands._auth_helper.load_auth") as mock_load,
+        ):
+            mock_load.return_value = AuthConfig(api_key="test-key")
 
-                result = runner.invoke(app, ["agent", "get", "chat-agent"], input="n\n")
-                assert result.exit_code == 0
-                assert "Cancelled" in result.output
+            result = runner.invoke(app, ["agent", "get", "chat-agent"], input="n\n")
+            assert result.exit_code == 0
+            assert "Cancelled" in result.output
 
 
 class TestAgentSetErrors:
@@ -534,9 +536,7 @@ model:
 
     @patch("lyzr_kit.commands._auth_helper.validate_auth")
     @patch("lyzr_kit.commands._auth_helper.load_auth")
-    def test_set_fails_when_id_changed_to_existing(
-        self, mock_load_auth, mock_validate
-    ):
+    def test_set_fails_when_id_changed_to_existing(self, mock_load_auth, mock_validate):
         """set should fail when ID in YAML conflicts with existing agent file."""
         from pathlib import Path
 

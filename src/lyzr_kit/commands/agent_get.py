@@ -83,11 +83,13 @@ def _build_clone_plan(
     for sub_id in agent.sub_agents:
         if storage.agent_exists_local(sub_id):
             # Sub-agent already exists locally - use it
-            plan.append(ClonePlanItem(
-                source_id=sub_id,
-                target_id=sub_id,
-                action="use existing",
-            ))
+            plan.append(
+                ClonePlanItem(
+                    source_id=sub_id,
+                    target_id=sub_id,
+                    action="use existing",
+                )
+            )
         else:
             # Need to clone this sub-agent and its dependencies
             sub_plan = _build_clone_plan(sub_id, storage, visiting.copy())
@@ -95,12 +97,14 @@ def _build_clone_plan(
 
     # Finally, add the main agent
     target_id = _generate_copy_id(source_id, storage)
-    plan.append(ClonePlanItem(
-        source_id=source_id,
-        target_id=target_id,
-        action="create",
-        is_main=True,
-    ))
+    plan.append(
+        ClonePlanItem(
+            source_id=source_id,
+            target_id=target_id,
+            action="create",
+            is_main=True,
+        )
+    )
 
     return plan
 
@@ -124,7 +128,9 @@ def _display_clone_plan(plan: list[ClonePlanItem], source_id: str) -> None:
         # Complex case: show table
         sub_count = len(plan) - 1  # Exclude main agent
         if sub_count > 0:
-            console.print(f"\nCreating '[bold]{plan[-1].target_id}[/bold]' with {sub_count} sub-agent(s):\n")
+            console.print(
+                f"\nCreating '[bold]{plan[-1].target_id}[/bold]' with {sub_count} sub-agent(s):\n"
+            )
         else:
             console.print(f"\nCreating '[bold]{plan[-1].target_id}[/bold]':\n")
 

@@ -84,7 +84,9 @@ class ErrorFormatter:
             lines.append("[yellow]Invalid agent schema:[/yellow]")
             for file in result.invalid_schema_files:
                 lines.append(f"  - {file.name}")
-            lines.append("[dim]Hint: Delete and re-clone with 'lk agent get <source> <new-id>'[/dim]")
+            lines.append(
+                "[dim]Hint: Delete and re-clone with 'lk agent get <source> <new-id>'[/dim]"
+            )
             lines.append("")
 
         return "\n".join(lines)
@@ -103,7 +105,9 @@ class ErrorFormatter:
         for agent_id in missing_ids:
             lines.append(f"  - '{agent_id}' not found in local agents")
         lines.append("")
-        lines.append("[dim]Sub-agents must be local agents. Run 'lk agent ls' to see available agents.[/dim]")
+        lines.append(
+            "[dim]Sub-agents must be local agents. Run 'lk agent ls' to see available agents.[/dim]"
+        )
         return "\n".join(lines)
 
     @staticmethod
@@ -119,7 +123,9 @@ class ErrorFormatter:
         lines = ["[red]Error: Circular sub-agent dependency detected[/red]", ""]
         lines.append(f"  [yellow]{' → '.join(cycle_path)}[/yellow]")
         lines.append("")
-        lines.append("[dim]Sub-agent relationships must be acyclic. Remove one of the references.[/dim]")
+        lines.append(
+            "[dim]Sub-agent relationships must be acyclic. Remove one of the references.[/dim]"
+        )
         return "\n".join(lines)
 
 

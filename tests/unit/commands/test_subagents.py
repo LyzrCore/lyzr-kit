@@ -160,7 +160,9 @@ class TestAgentRmWithSubAgents:
         parent1 = create_test_agent("force-parent-one", sub_agents=["shared-force-sub"])
         storage.save_agent(parent1)
 
-        parent2 = create_test_agent("force-parent-two", sub_agents=["shared-force-sub", "other-sub"])
+        parent2 = create_test_agent(
+            "force-parent-two", sub_agents=["shared-force-sub", "other-sub"]
+        )
         storage.save_agent(parent2)
 
         # Delete with --force flag
@@ -267,6 +269,7 @@ class TestAgentSetWithSubAgents:
     def test_set_updates_subagent_references_on_id_change(self, mock_platform, mock_auth):
         """set should update sub-agent references when ID changes."""
         import uuid
+
         from lyzr_kit.utils.auth import AuthConfig
         from lyzr_kit.utils.platform import AgentResponse
 
@@ -302,7 +305,9 @@ class TestAgentSetWithSubAgents:
 
         # Run set on the renamed agent
         result = runner.invoke(app, ["agent", "set", old_id])
-        assert result.exit_code == 0, f"Expected 0 but got {result.exit_code}. Output: {result.output}"
+        assert result.exit_code == 0, (
+            f"Expected 0 but got {result.exit_code}. Output: {result.output}"
+        )
         assert "updated successfully" in result.output
         assert "Updated sub-agent references" in result.output
         assert parent_id in result.output

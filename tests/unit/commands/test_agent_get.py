@@ -118,13 +118,15 @@ class TestAgentGetErrors:
 
     def test_get_cancels_on_no(self):
         """get should cancel when user says no."""
-        with patch("lyzr_kit.commands._auth_helper.validate_auth", return_value=True):
-            with patch("lyzr_kit.commands._auth_helper.load_auth") as mock_load:
-                mock_load.return_value = AuthConfig(api_key="test-key")
+        with (
+            patch("lyzr_kit.commands._auth_helper.validate_auth", return_value=True),
+            patch("lyzr_kit.commands._auth_helper.load_auth") as mock_load,
+        ):
+            mock_load.return_value = AuthConfig(api_key="test-key")
 
-                result = runner.invoke(app, ["agent", "get", "chat-agent"], input="n\n")
-                assert result.exit_code == 0
-                assert "Cancelled" in result.output
+            result = runner.invoke(app, ["agent", "get", "chat-agent"], input="n\n")
+            assert result.exit_code == 0
+            assert "Cancelled" in result.output
 
 
 class TestAgentGetHelp:

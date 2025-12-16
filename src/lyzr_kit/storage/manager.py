@@ -15,7 +15,9 @@ COLLECTION_DIR = Path(__file__).parent.parent / "collection"
 class AgentLoadError(Exception):
     """Raised when loading an agent fails."""
 
-    def __init__(self, message: str, yaml_error: bool = False, schema_error: ValidationError | None = None):
+    def __init__(
+        self, message: str, yaml_error: bool = False, schema_error: ValidationError | None = None
+    ):
         super().__init__(message)
         self.yaml_error = yaml_error
         self.schema_error = schema_error
@@ -88,7 +90,9 @@ class StorageManager:
 
         except ValidationError as e:
             if raise_on_error:
-                raise AgentLoadError(f"Schema validation failed for {path.name}", schema_error=e) from e
+                raise AgentLoadError(
+                    f"Schema validation failed for {path.name}", schema_error=e
+                ) from e
             return None
 
         except Exception as e:

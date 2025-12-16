@@ -111,7 +111,9 @@ def set_agent(identifier: str) -> None:
     if id_changed:
         updated_agents = storage.update_subagent_references(agent_id, agent.id)
         if updated_agents:
-            console.print(f"\n[cyan]Updated sub-agent references in {len(updated_agents)} agent(s):[/cyan]")
+            console.print(
+                f"\n[cyan]Updated sub-agent references in {len(updated_agents)} agent(s):[/cyan]"
+            )
             for updated_id in updated_agents:
                 console.print(f"  - {updated_id}")
 

@@ -68,44 +68,52 @@ def _run_doctor(storage: StorageManager) -> DoctorReport:
             if missing:
                 agent_healthy = False
                 for sub_id in missing:
-                    report.agent_issues.append(AgentIssue(
-                        agent_id=agent.id,
-                        issue_type="missing_sub_agent",
-                        message=f"Sub-agent '{sub_id}' not found",
-                        fix_hint=f"Run 'lk agent get {sub_id}' or remove from sub_agents",
-                    ))
+                    report.agent_issues.append(
+                        AgentIssue(
+                            agent_id=agent.id,
+                            issue_type="missing_sub_agent",
+                            message=f"Sub-agent '{sub_id}' not found",
+                            fix_hint=f"Run 'lk agent get {sub_id}' or remove from sub_agents",
+                        )
+                    )
 
             # Check for cycles
             cycle = detect_cycle(agent.id, agent.sub_agents, storage)
             if cycle:
                 agent_healthy = False
                 cycle_path = " → ".join(cycle)
-                report.agent_issues.append(AgentIssue(
-                    agent_id=agent.id,
-                    issue_type="circular_dependency",
-                    message=f"Circular dependency: {cycle_path}",
-                    fix_hint="Remove one of the references in sub_agents",
-                ))
+                report.agent_issues.append(
+                    AgentIssue(
+                        agent_id=agent.id,
+                        issue_type="circular_dependency",
+                        message=f"Circular dependency: {cycle_path}",
+                        fix_hint="Remove one of the references in sub_agents",
+                    )
+                )
 
         # Check platform deployment
         if not agent.platform_agent_id:
             agent_healthy = False
-            report.agent_issues.append(AgentIssue(
-                agent_id=agent.id,
-                issue_type="no_platform_id",
-                message="Not deployed to platform",
-                fix_hint=f"Run 'lk agent set {agent.id}' to deploy",
-            ))
+            report.agent_issues.append(
+                AgentIssue(
+                    agent_id=agent.id,
+                    issue_type="no_platform_id",
+                    message="Not deployed to platform",
+                    fix_hint=f"Run 'lk agent set {agent.id}' to deploy",
+                )
+            )
 
         # Check active status
         if not agent.is_active:
             agent_healthy = False
-            report.agent_issues.append(AgentIssue(
-                agent_id=agent.id,
-                issue_type="not_active",
-                message="Agent is not active",
-                fix_hint=f"Run 'lk agent set {agent.id}' to activate",
-            ))
+            report.agent_issues.append(
+                AgentIssue(
+                    agent_id=agent.id,
+                    issue_type="not_active",
+                    message="Agent is not active",
+                    fix_hint=f"Run 'lk agent set {agent.id}' to activate",
+                )
+            )
 
         if agent_healthy:
             report.healthy_count += 1

@@ -123,9 +123,7 @@ model:
 
     @patch("lyzr_kit.commands._auth_helper.validate_auth")
     @patch("lyzr_kit.commands._auth_helper.load_auth")
-    def test_set_fails_when_id_changed_to_existing(
-        self, mock_load_auth, mock_validate
-    ):
+    def test_set_fails_when_id_changed_to_existing(self, mock_load_auth, mock_validate):
         """set should fail when ID in YAML conflicts with existing agent file."""
         mock_load_auth.return_value = AuthConfig(api_key="test-key")
         mock_validate.return_value = True
