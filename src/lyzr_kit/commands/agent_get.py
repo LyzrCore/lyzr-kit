@@ -261,7 +261,8 @@ def get_agent(source_id: str) -> None:
     # Show success message
     console.print(f"\n[green]Agent '{agent.id}' created successfully![/green]")
     console.print(f"[dim]Local config:[/dim] agents/{agent.id}.yaml")
-    if agent.endpoint:
-        console.print(f"[dim]API Endpoint:[/dim] {agent.endpoint}")
+    if agent.platform_agent_id:
+        studio_url = f"https://studio.lyzr.ai/agent-create/{agent.platform_agent_id}"
+        console.print(f"[dim]Studio URL:[/dim] {studio_url}")
 
     console.print(f"\n[dim]To rename, edit the YAML and run:[/dim] lk agent set {agent.id}")
