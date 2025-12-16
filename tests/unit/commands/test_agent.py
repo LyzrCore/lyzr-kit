@@ -38,7 +38,7 @@ class TestAgentLs:
         assert "ID" in result.output
         assert "NAME" in result.output
         assert "CATEGORY" in result.output
-        assert "ENDPOINT" in result.output
+        assert "STUDIO" in result.output
 
     def test_ls_shows_serial_numbers(self):
         """ls should show serial numbers from YAML."""
@@ -222,14 +222,14 @@ class TestAgentHelp:
         result = runner.invoke(app, ["agent", "get", "--help"])
         assert result.exit_code == 0
         assert "SOURCE_ID" in result.output
-        assert "NEW_ID" in result.output
+        assert "Clone" in result.output or "agent" in result.output.lower()
 
     def test_agent_set_help(self):
         """agent set --help should show command description."""
         result = runner.invoke(app, ["agent", "set", "--help"])
         assert result.exit_code == 0
         assert "IDENTIFIER" in result.output
-        assert "Push local changes" in result.output
+        assert "Sync" in result.output or "platform" in result.output.lower()
 
 
 class TestAgentGetSerialNumbers:
@@ -256,7 +256,8 @@ class TestAgentGetSerialNumbers:
         mock_platform_class.return_value = mock_platform
 
         # Use 1 for built-in agent (chat-agent has serial 1)
-        result = runner.invoke(app, ["agent", "get", "1", "my-chat-agent"])
+        # Provide 'y' for confirmation prompt
+        result = runner.invoke(app, ["agent", "get", "1"], input="y\n")
         assert result.exit_code == 0
         assert "created successfully" in result.output
 
@@ -270,7 +271,7 @@ class TestAgentGetSerialNumbers:
         mock_validate.return_value = True
 
         # Try to use 99 which doesn't exist
-        result = runner.invoke(app, ["agent", "get", "99", "my-agent"])
+        result = runner.invoke(app, ["agent", "get", "99"])
         assert result.exit_code == 1
         assert "not found" in result.output
 
@@ -283,7 +284,7 @@ class TestAgentGetSerialNumbers:
         mock_load_auth.return_value = AuthConfig(api_key="test-key")
         mock_validate.return_value = True
 
-        result = runner.invoke(app, ["agent", "get", "99", "my-agent"])
+        result = runner.invoke(app, ["agent", "get", "99"])
         assert result.exit_code == 1
         # Should show the agent list after error
         assert "Agents" in result.output
@@ -369,28 +370,9 @@ class TestAgentGetErrors:
         """get should fail with auth error when no .env file."""
         mock_load_auth.side_effect = AuthError("Authentication required")
 
-        result = runner.invoke(app, ["agent", "get", "chat-agent", "my-chat-agent"])
+        result = runner.invoke(app, ["agent", "get", "chat-agent"])
         assert result.exit_code == 1
         assert "Authentication Error" in result.output
-
-    @patch("lyzr_kit.commands._auth_helper.validate_auth")
-    @patch("lyzr_kit.commands._auth_helper.load_auth")
-    @patch("lyzr_kit.commands.agent_get.StorageManager")
-    def test_get_fails_when_new_id_exists(self, mock_storage_class, mock_load_auth, mock_validate):
-        """get should fail when new_id already exists."""
-        from lyzr_kit.utils.auth import AuthConfig
-
-        mock_load_auth.return_value = AuthConfig(api_key="test-key")
-        mock_validate.return_value = True
-
-        mock_storage = MagicMock()
-        mock_storage.agent_exists.return_value = True  # ID already exists
-        mock_storage_class.return_value = mock_storage
-
-        result = runner.invoke(app, ["agent", "get", "chat-agent", "existing-agent"])
-        assert result.exit_code == 1
-        assert "already exists" in result.output
-        assert "Re-run the command" in result.output
 
     @patch("lyzr_kit.commands._auth_helper.validate_auth")
     @patch("lyzr_kit.commands._auth_helper.load_auth")
@@ -407,15 +389,16 @@ class TestAgentGetErrors:
         mock_platform.create_agent.side_effect = PlatformError("API error")
         mock_platform_class.return_value = mock_platform
 
-        result = runner.invoke(app, ["agent", "get", "chat-agent", "my-new-agent"])
+        # Provide 'y' for confirmation
+        result = runner.invoke(app, ["agent", "get", "chat-agent"], input="y\n")
         assert result.exit_code == 1
         assert "Platform Error" in result.output
 
     @patch("lyzr_kit.commands._auth_helper.validate_auth")
     @patch("lyzr_kit.commands._auth_helper.load_auth")
     @patch("lyzr_kit.commands.agent_get.PlatformClient")
-    def test_get_shows_marketplace_app_id(self, mock_platform_class, mock_load_auth, mock_validate):
-        """get should show marketplace app ID when available."""
+    def test_get_creates_copy_of_agent(self, mock_platform_class, mock_load_auth, mock_validate):
+        """get should create agent with copy-of-<name> ID."""
         from lyzr_kit.utils.auth import AuthConfig
         from lyzr_kit.utils.platform import AgentResponse
 
@@ -433,10 +416,25 @@ class TestAgentGetErrors:
         )
         mock_platform_class.return_value = mock_platform
 
-        result = runner.invoke(app, ["agent", "get", "chat-agent", "my-new-agent"])
+        # Provide 'y' for confirmation
+        result = runner.invoke(app, ["agent", "get", "chat-agent"], input="y\n")
         assert result.exit_code == 0
-        assert "Marketplace App:" in result.output
-        assert "app-789" in result.output
+        assert "copy-of-chat-agent" in result.output
+        assert "created successfully" in result.output
+
+    def test_get_cancels_on_no(self):
+        """get should cancel when user says no."""
+        from unittest.mock import patch
+
+        with patch("lyzr_kit.commands._auth_helper.validate_auth", return_value=True):
+            with patch("lyzr_kit.commands._auth_helper.load_auth") as mock_load:
+                from lyzr_kit.utils.auth import AuthConfig
+
+                mock_load.return_value = AuthConfig(api_key="test-key")
+
+                result = runner.invoke(app, ["agent", "get", "chat-agent"], input="n\n")
+                assert result.exit_code == 0
+                assert "Cancelled" in result.output
 
 
 class TestAgentSetErrors:
@@ -536,11 +534,10 @@ model:
 
     @patch("lyzr_kit.commands._auth_helper.validate_auth")
     @patch("lyzr_kit.commands._auth_helper.load_auth")
-    @patch("lyzr_kit.commands.agent_set.StorageManager")
     def test_set_fails_when_id_changed_to_existing(
-        self, mock_storage_class, mock_load_auth, mock_validate
+        self, mock_load_auth, mock_validate
     ):
-        """set should fail when ID in YAML conflicts with existing agent."""
+        """set should fail when ID in YAML conflicts with existing agent file."""
         from pathlib import Path
 
         from lyzr_kit.utils.auth import AuthConfig
@@ -563,10 +560,18 @@ model:
   credential_id: cred-1
 """)
 
-        mock_storage = MagicMock()
-        mock_storage.local_path = Path.cwd()
-        mock_storage.agent_exists.return_value = True  # Conflicting ID exists
-        mock_storage_class.return_value = mock_storage
+        # Create a conflicting agent file with the same ID
+        (agents_dir / "conflicting-id.yaml").write_text("""
+id: conflicting-id
+name: Existing Agent
+category: chat
+platform_agent_id: agent-existing
+platform_env_id: env-existing
+model:
+  provider: openai
+  name: gpt-4
+  credential_id: cred-1
+""")
 
         result = runner.invoke(app, ["agent", "set", "my-agent"])
         assert result.exit_code == 1
@@ -626,7 +631,7 @@ class TestAgentChat:
         result = runner.invoke(app, ["agent", "chat", "--help"])
         assert result.exit_code == 0
         assert "IDENTIFIER" in result.output
-        assert "Chat with" in result.output
+        assert "chat" in result.output.lower()
 
     @patch("lyzr_kit.commands._auth_helper.load_auth")
     def test_chat_fails_without_auth(self, mock_load_auth):

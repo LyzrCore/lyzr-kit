@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2024-12-16
+
+### Added
+- **Sub-agent orchestration** - Agents can delegate tasks via `sub_agents` array
+- **Plan-based cloning** - `lk get` shows dependency plan with single confirmation
+- **Default ID generation** - Uses `copy-of-<name>` format (e.g., `copy-of-chat-agent`)
+- **Circular dependency detection** - Validates sub-agent relationships are acyclic
+- **Tree command** (`lk tree`) - Visualize agent dependency hierarchies
+- **Doctor command** (`lk doctor`) - Validate all local agents (missing subs, cycles, deployment)
+- **Recursive delete** (`lk rm --tree`) - Delete agent and all sub-agents
+- **Force delete** (`lk rm --force`) - Remove from parent agents and delete
+- Built-in agents with sub-agents: project-manager, dev-lead, tech-director
+
+### Changed
+- `lk get` no longer prompts for agent ID - uses `copy-of-<name>` by default
+- Rename agents by editing YAML `id` field and running `lk set`
+
+### Internal
+- **Codebase refactoring** - Decomposed large files into focused modules
+- Split `agent_chat.py` (560→132 lines) into `_chat/` module (state, ui, streaming, keybindings)
+- Split `validator.py` (342→46 lines) into `_validation/` module (models, folder, yaml, cycle, formatters)
+- Organized test files by command (test_agent_ls.py, test_agent_get.py, etc.)
+- Improved OOP patterns with dataclasses and dedicated validator classes
+
 ## [0.2.2] - 2024-12-08
 
 ### Changed
@@ -49,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Typer + Rich CLI
 - uv package manager support
 
-[Unreleased]: https://github.com/LyzrCore/lyzr-kit/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/LyzrCore/lyzr-kit/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/LyzrCore/lyzr-kit/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/LyzrCore/lyzr-kit/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/LyzrCore/lyzr-kit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/LyzrCore/lyzr-kit/compare/v0.1.0...v0.2.0

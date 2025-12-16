@@ -17,15 +17,15 @@ lk auth
 # 2. List agents (two tables: Built-in + Your Agents)
 lk ls
 
-# 3. Deploy an agent
-lk get chat-agent my-assistant
+# 3. Deploy an agent (creates copy-of-<name>)
+lk get chat-agent
 
 # 4. Chat with your agent
-lk chat my-assistant
+lk chat copy-of-chat-agent
 
 # 5. Modify and update
-# Edit agents/my-assistant.yaml, then:
-lk set my-assistant
+# Edit agents/copy-of-chat-agent.yaml (change id field), then:
+lk set copy-of-chat-agent
 ```
 
 ## Chat Experience
@@ -43,32 +43,60 @@ lk set my-assistant
 |---------|-------------|
 | `lk auth` | Configure API credentials |
 | `lk ls` | List all agents |
-| `lk get <source> [id]` | Clone and deploy agent |
+| `lk get <source>` | Clone and deploy agent (creates `copy-of-<name>`) |
 | `lk set <id>` | Update agent on platform |
 | `lk chat <id>` | Interactive chat session |
+| `lk rm <id>` | Delete local agent |
+| `lk tree [id]` | Show agent dependency tree |
+| `lk doctor` | Validate all local agents |
 
 **Note**: `agent` resource is optional. `lk ls` = `lk agent ls` = `lk a ls`
 
 **Serial numbers**: Context-aware lookup
 - `get` → Built-in agents (`lk get 1`)
-- `set`/`chat` → Your agents (`lk chat 1`)
+- `set`/`chat`/`rm` → Your agents (`lk chat 1`)
+
+## Agent Get Flow
+
+When you run `lk get`, the CLI shows a dependency plan and asks for confirmation:
+
+```
+$ lk get project-manager
+
+Creating 'copy-of-project-manager' with 3 sub-agent(s):
+
+  AGENT                        ACTION         FROM
+  copy-of-task-planner         create         task-planner
+  copy-of-data-analyst         create         data-analyst
+  copy-of-summarizer           create         summarizer
+  copy-of-project-manager      create         project-manager
+
+Proceed? [Y/n]: y
+```
+
+To rename an agent, edit the YAML file and run `lk set`.
+
+## Sub-agent Management
+
+| Command | Description |
+|---------|-------------|
+| `lk tree` | Show all agent trees |
+| `lk tree <id>` | Show specific agent tree |
+| `lk doctor` | Validate all agents (missing subs, cycles, etc.) |
+| `lk rm <id> --tree` | Delete agent and all its sub-agents |
+| `lk rm <id> --force` | Delete even if used by other agents |
 
 ## Built-in Agents
 
-| # | ID | Category |
-|---|-----|----------|
-| 1 | `chat-agent` | chat |
-| 2 | `qa-agent` | qa |
-| 3 | `code-reviewer` | qa |
-| 4 | `content-writer` | chat |
-| 5 | `customer-support` | chat |
-| 6 | `data-analyst` | qa |
-| 7 | `email-composer` | chat |
-| 8 | `research-assistant` | chat |
-| 9 | `sql-expert` | qa |
-| 10 | `summarizer` | qa |
-| 11 | `task-planner` | chat |
-| 12 | `translator` | qa |
+| # | ID | Category | Sub-agents |
+|---|-----|----------|------------|
+| 1 | `chat-agent` | chat | - |
+| 2 | `qa-agent` | qa | - |
+| 3 | `summarizer` | qa | - |
+| ... | ... | ... | ... |
+| 13 | `project-manager` | chat | task-planner, data-analyst, summarizer |
+| 14 | `dev-lead` | chat | code-reviewer, research-assistant |
+| 15 | `tech-director` | chat | dev-lead, project-manager |
 
 ## Environment Variables
 
@@ -99,7 +127,7 @@ mypy src/
 |-------|-------|--------|
 | 1 | Agents, CLI, storage | ✅ Done |
 | 2 | Chat experience, WebSocket events | ✅ Done |
-| 3 | Sub-agents | Pending |
+| 3 | Sub-agents | ✅ Done |
 | 4 | Tools | Pending |
 | 5 | Features | Pending |
 

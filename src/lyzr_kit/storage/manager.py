@@ -1,13 +1,24 @@
 """Core storage manager for lyzr-kit resources."""
 
 from pathlib import Path
+from typing import Literal
 
 import yaml
+from pydantic import ValidationError
 
 from lyzr_kit.schemas.agent import Agent
 
 # Built-in resources bundled with the package
 COLLECTION_DIR = Path(__file__).parent.parent / "collection"
+
+
+class AgentLoadError(Exception):
+    """Raised when loading an agent fails."""
+
+    def __init__(self, message: str, yaml_error: bool = False, schema_error: ValidationError | None = None):
+        super().__init__(message)
+        self.yaml_error = yaml_error
+        self.schema_error = schema_error
 
 
 class StorageManager:
@@ -45,44 +56,82 @@ class StorageManager:
         except OSError:
             return []
 
-    def _load_agent(self, path: Path) -> Agent | None:
-        """Load an agent from a YAML file."""
+    def _load_agent(self, path: Path, raise_on_error: bool = False) -> Agent | None:
+        """Load an agent from a YAML file.
+
+        Args:
+            path: Path to the YAML file.
+            raise_on_error: If True, raise AgentLoadError on failure.
+                           If False, silently return None.
+
+        Returns:
+            Agent object or None (if raise_on_error=False and loading fails).
+
+        Raises:
+            AgentLoadError: If raise_on_error=True and loading fails.
+        """
         try:
             with open(path) as f:
                 data = yaml.safe_load(f)
+
+            if data is None:
+                if raise_on_error:
+                    raise AgentLoadError(f"Empty YAML file: {path.name}", yaml_error=True)
+                return None
+
             return Agent.model_validate(data)
-        except Exception:
+
+        except yaml.YAMLError as e:
+            if raise_on_error:
+                raise AgentLoadError(f"Invalid YAML syntax: {e}", yaml_error=True) from e
             return None
 
-    def list_agents(self) -> list[tuple[Agent, str]]:
-        """List all agents from built-in and local directories.
+        except ValidationError as e:
+            if raise_on_error:
+                raise AgentLoadError(f"Schema validation failed for {path.name}", schema_error=e) from e
+            return None
+
+        except Exception as e:
+            if raise_on_error:
+                raise AgentLoadError(f"Failed to load {path.name}: {e}") from e
+            return None
+
+    def list_agents(
+        self, source: Literal["all", "built-in", "local"] = "all"
+    ) -> list[tuple[Agent, str]]:
+        """List agents from built-in and/or local directories.
+
+        Args:
+            source: Filter by source - "all", "built-in", or "local".
 
         Returns:
-            List of tuples containing (agent, source) where source is
+            List of tuples containing (agent, source_type) where source_type is
             "built-in" or "local". Sorted by serial number.
         """
         agents: list[tuple[Agent, str]] = []
 
         # Built-in agents
-        builtin_dir = self.builtin_path / "agents"
-        for yaml_file in self._list_yaml_files(builtin_dir):
-            agent = self._load_agent(yaml_file)
-            if agent:
-                agents.append((agent, "built-in"))
+        if source in ("all", "built-in"):
+            builtin_dir = self.builtin_path / "agents"
+            for yaml_file in self._list_yaml_files(builtin_dir):
+                agent = self._load_agent(yaml_file)
+                if agent:
+                    agents.append((agent, "built-in"))
 
         # Local agents
-        local_dir = self.local_path / "agents"
-        for yaml_file in self._list_yaml_files(local_dir):
-            agent = self._load_agent(yaml_file)
-            if agent:
-                agents.append((agent, "local"))
+        if source in ("all", "local"):
+            local_dir = self.local_path / "agents"
+            for yaml_file in self._list_yaml_files(local_dir):
+                agent = self._load_agent(yaml_file)
+                if agent:
+                    agents.append((agent, "local"))
 
         # Sort: built-in first (by serial), then local (by serial)
         def sort_key(item: tuple[Agent, str]) -> tuple[int, int]:
-            agent, source = item
+            agent, src = item
             serial = agent.serial if agent.serial is not None else 999999
             # Built-in = 0, local = 1 (so built-in comes first)
-            source_order = 0 if source == "built-in" else 1
+            source_order = 0 if src == "built-in" else 1
             return (source_order, serial)
 
         agents.sort(key=sort_key)
@@ -130,24 +179,105 @@ class StorageManager:
 
         return path
 
-    def agent_exists_local(self, agent_id: str) -> bool:
-        """Check if agent exists in local directory."""
-        local_dir = self.local_path / "agents"
-        for yaml_file in self._list_yaml_files(local_dir):
-            agent = self._load_agent(yaml_file)
-            if agent and agent.id == agent_id:
-                return True
+    def agent_exists(
+        self, agent_id: str, source: Literal["all", "built-in", "local"] = "all"
+    ) -> bool:
+        """Check if agent exists in built-in and/or local directory.
+
+        Args:
+            agent_id: The agent ID to check.
+            source: Where to search - "all", "built-in", or "local".
+
+        Returns:
+            True if agent exists in the specified location(s).
+        """
+        # Check local
+        if source in ("all", "local"):
+            local_dir = self.local_path / "agents"
+            for yaml_file in self._list_yaml_files(local_dir):
+                agent = self._load_agent(yaml_file)
+                if agent and agent.id == agent_id:
+                    return True
+
+        # Check built-in
+        if source in ("all", "built-in"):
+            builtin_dir = self.builtin_path / "agents"
+            for yaml_file in self._list_yaml_files(builtin_dir):
+                agent = self._load_agent(yaml_file)
+                if agent and agent.id == agent_id:
+                    return True
+
         return False
 
-    def agent_exists(self, agent_id: str) -> bool:
-        """Check if agent exists in built-in or local directory."""
-        if self.agent_exists_local(agent_id):
-            return True
+    def agent_exists_local(self, agent_id: str) -> bool:
+        """Check if agent exists in local directory.
 
-        builtin_dir = self.builtin_path / "agents"
-        for yaml_file in self._list_yaml_files(builtin_dir):
+        Note: This is a convenience method. Equivalent to agent_exists(id, source="local").
+        """
+        return self.agent_exists(agent_id, source="local")
+
+    def list_local_agents(self) -> list[Agent]:
+        """List all local agents.
+
+        Note: This is a convenience method. Equivalent to list_agents(source="local").
+
+        Returns:
+            List of Agent objects from local directory.
+        """
+        return [agent for agent, _ in self.list_agents(source="local")]
+
+    def find_agents_using_subagent(self, agent_id: str) -> list[Agent]:
+        """Find all local agents that reference agent_id in their sub_agents.
+
+        Args:
+            agent_id: The agent ID to search for in sub_agents arrays.
+
+        Returns:
+            List of agents that use the given agent_id as a sub-agent.
+        """
+        using_agents: list[Agent] = []
+        for agent in self.list_local_agents():
+            if agent_id in agent.sub_agents:
+                using_agents.append(agent)
+        return using_agents
+
+    def update_subagent_references(self, old_id: str, new_id: str) -> list[str]:
+        """Update all sub_agents arrays from old_id to new_id.
+
+        Args:
+            old_id: The old agent ID to replace.
+            new_id: The new agent ID to use.
+
+        Returns:
+            List of agent IDs that were updated.
+        """
+        updated_agents: list[str] = []
+        local_dir = self.local_path / "agents"
+
+        for yaml_file in self._list_yaml_files(local_dir):
             agent = self._load_agent(yaml_file)
-            if agent and agent.id == agent_id:
-                return True
+            if agent and old_id in agent.sub_agents:
+                # Update the sub_agents array
+                agent.sub_agents = [new_id if sid == old_id else sid for sid in agent.sub_agents]
+                # Save the updated agent
+                self.save_agent(agent)
+                updated_agents.append(agent.id)
 
+        return updated_agents
+
+    def delete_agent(self, agent_id: str) -> bool:
+        """Delete a local agent YAML file.
+
+        Args:
+            agent_id: The agent ID to delete.
+
+        Returns:
+            True if deleted, False if not found.
+        """
+        local_dir = self.local_path / "agents"
+        yaml_path = local_dir / f"{agent_id}.yaml"
+
+        if yaml_path.exists():
+            yaml_path.unlink()
+            return True
         return False

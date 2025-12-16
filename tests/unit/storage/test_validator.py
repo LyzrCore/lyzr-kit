@@ -7,10 +7,14 @@ from pydantic import ValidationError
 from lyzr_kit.schemas.agent import Agent
 from lyzr_kit.storage.validator import (
     ValidationResult,
+    detect_cycle,
+    format_cycle_error,
     format_schema_errors,
+    format_subagent_errors,
     format_validation_errors,
     validate_agent_yaml_file,
     validate_agents_folder,
+    validate_sub_agents,
 )
 
 
@@ -309,3 +313,278 @@ class TestFormatSchemaErrors:
 
         assert "Fix the YAML file" in output
         assert "lk agent set test-agent" in output
+
+
+class TestValidateSubAgents:
+    """Tests for validate_sub_agents function."""
+
+    def test_returns_empty_list_when_no_sub_agents(self):
+        """Should return empty list when sub_agents is empty."""
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+        missing = validate_sub_agents([], storage)
+        assert missing == []
+
+    def test_returns_empty_list_when_all_exist(self):
+        """Should return empty list when all sub-agents exist locally."""
+        from lyzr_kit.schemas.agent import ModelConfig
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # Create two local agents
+        agent1 = Agent(
+            id="sub-agent-one",
+            name="Sub Agent One",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+        )
+        storage.save_agent(agent1)
+
+        agent2 = Agent(
+            id="sub-agent-two",
+            name="Sub Agent Two",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+        )
+        storage.save_agent(agent2)
+
+        # Validate - should find both
+        missing = validate_sub_agents(["sub-agent-one", "sub-agent-two"], storage)
+        assert missing == []
+
+    def test_returns_missing_ids(self):
+        """Should return list of missing sub-agent IDs."""
+        from lyzr_kit.schemas.agent import ModelConfig
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # Create one local agent
+        agent = Agent(
+            id="existing-sub-agent",
+            name="Existing Sub Agent",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+        )
+        storage.save_agent(agent)
+
+        # Validate with one existing and two missing
+        missing = validate_sub_agents(
+            ["existing-sub-agent", "missing-agent-1", "missing-agent-2"],
+            storage,
+        )
+        assert len(missing) == 2
+        assert "missing-agent-1" in missing
+        assert "missing-agent-2" in missing
+        assert "existing-sub-agent" not in missing
+
+    def test_does_not_validate_against_builtin(self):
+        """Should NOT accept built-in agents as valid sub-agents (local only)."""
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # chat-agent is a built-in agent, NOT a local agent
+        missing = validate_sub_agents(["chat-agent"], storage)
+        assert "chat-agent" in missing
+
+
+class TestFormatSubagentErrors:
+    """Tests for format_subagent_errors function."""
+
+    def test_formats_single_missing_id(self):
+        """Should format error for single missing sub-agent ID."""
+        output = format_subagent_errors(["missing-agent"])
+
+        assert "Invalid sub-agent IDs" in output
+        assert "'missing-agent' not found" in output
+        assert "local agents" in output
+
+    def test_formats_multiple_missing_ids(self):
+        """Should format error for multiple missing sub-agent IDs."""
+        output = format_subagent_errors(["missing-1", "missing-2", "missing-3"])
+
+        assert "Invalid sub-agent IDs" in output
+        assert "'missing-1'" in output
+        assert "'missing-2'" in output
+        assert "'missing-3'" in output
+
+    def test_includes_hint(self):
+        """Should include hint about running lk agent ls."""
+        output = format_subagent_errors(["missing-agent"])
+
+        assert "lk agent ls" in output
+
+
+class TestDetectCycle:
+    """Tests for detect_cycle function."""
+
+    def test_returns_none_when_no_sub_agents(self):
+        """Should return None when there are no sub-agents."""
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+        cycle = detect_cycle("agent-a", [], storage)
+        assert cycle is None
+
+    def test_returns_none_for_acyclic_graph(self):
+        """Should return None for valid acyclic sub-agent relationships."""
+        from lyzr_kit.schemas.agent import ModelConfig
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # Create chain: A -> B -> C (no cycle)
+        agent_c = Agent(
+            id="agent-c",
+            name="Agent C",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+            sub_agents=[],
+        )
+        storage.save_agent(agent_c)
+
+        agent_b = Agent(
+            id="agent-b",
+            name="Agent B",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+            sub_agents=["agent-c"],
+        )
+        storage.save_agent(agent_b)
+
+        # Check if A can have B as sub-agent (should be acyclic)
+        cycle = detect_cycle("agent-a", ["agent-b"], storage)
+        assert cycle is None
+
+    def test_detects_direct_cycle(self):
+        """Should detect direct cycle: A -> B -> A."""
+        from lyzr_kit.schemas.agent import ModelConfig
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # Create B that references A
+        agent_b = Agent(
+            id="agent-b",
+            name="Agent B",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+            sub_agents=["agent-a"],  # B -> A creates cycle when A -> B
+        )
+        storage.save_agent(agent_b)
+
+        # Check if A can have B as sub-agent (should detect cycle A -> B -> A)
+        cycle = detect_cycle("agent-a", ["agent-b"], storage)
+        assert cycle is not None
+        assert cycle == ["agent-a", "agent-b", "agent-a"]
+
+    def test_detects_indirect_cycle(self):
+        """Should detect indirect cycle: A -> B -> C -> A."""
+        from lyzr_kit.schemas.agent import ModelConfig
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # Create chain that eventually loops back to A
+        agent_c = Agent(
+            id="agent-c",
+            name="Agent C",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+            sub_agents=["agent-a"],  # C -> A creates cycle
+        )
+        storage.save_agent(agent_c)
+
+        agent_b = Agent(
+            id="agent-b",
+            name="Agent B",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+            sub_agents=["agent-c"],  # B -> C
+        )
+        storage.save_agent(agent_b)
+
+        # Check if A can have B as sub-agent (should detect cycle A -> B -> C -> A)
+        cycle = detect_cycle("agent-a", ["agent-b"], storage)
+        assert cycle is not None
+        assert cycle == ["agent-a", "agent-b", "agent-c", "agent-a"]
+
+    def test_detects_self_reference(self):
+        """Should detect self-reference: A -> A."""
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # Check if A can have A as sub-agent (direct self-reference)
+        cycle = detect_cycle("agent-a", ["agent-a"], storage)
+        assert cycle is not None
+        assert cycle == ["agent-a", "agent-a"]
+
+    def test_handles_multiple_sub_agents(self):
+        """Should handle multiple sub-agents and find cycle in one branch."""
+        from lyzr_kit.schemas.agent import ModelConfig
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # Create agents: B is safe, C creates cycle
+        agent_b = Agent(
+            id="agent-b",
+            name="Agent B",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+            sub_agents=[],  # Safe, no sub-agents
+        )
+        storage.save_agent(agent_b)
+
+        agent_c = Agent(
+            id="agent-c",
+            name="Agent C",
+            category="chat",
+            model=ModelConfig(provider="openai", name="gpt-4", credential_id="cred-1"),
+            sub_agents=["agent-a"],  # C -> A creates cycle
+        )
+        storage.save_agent(agent_c)
+
+        # A has both B and C as sub-agents - should detect cycle through C
+        cycle = detect_cycle("agent-a", ["agent-b", "agent-c"], storage)
+        assert cycle is not None
+        assert "agent-a" in cycle
+        assert "agent-c" in cycle
+
+    def test_handles_missing_sub_agent(self):
+        """Should handle gracefully when sub-agent doesn't exist."""
+        from lyzr_kit.storage.manager import StorageManager
+
+        storage = StorageManager()
+
+        # Check with non-existent sub-agent
+        cycle = detect_cycle("agent-a", ["non-existent-agent"], storage)
+        assert cycle is None  # No cycle if agent doesn't exist
+
+
+class TestFormatCycleError:
+    """Tests for format_cycle_error function."""
+
+    def test_formats_direct_cycle(self):
+        """Should format direct cycle error."""
+        output = format_cycle_error(["agent-a", "agent-b", "agent-a"])
+
+        assert "Circular sub-agent dependency" in output
+        assert "agent-a → agent-b → agent-a" in output
+        assert "acyclic" in output
+
+    def test_formats_longer_cycle(self):
+        """Should format longer cycle path."""
+        output = format_cycle_error(["a", "b", "c", "d", "a"])
+
+        assert "a → b → c → d → a" in output
+
+    def test_includes_fix_hint(self):
+        """Should include hint to remove reference."""
+        output = format_cycle_error(["agent-a", "agent-b", "agent-a"])
+
+        assert "Remove one of the references" in output

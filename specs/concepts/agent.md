@@ -13,20 +13,23 @@ An **Agent** is the core entity in Lyzr Kit. It represents an AI-powered assista
 
 ## Built-in Agents
 
-| Serial | ID | Category | Description |
-|--------|-----|----------|-------------|
-| #1 | `chat-agent` | chat | Default conversational agent |
-| #2 | `qa-agent` | qa | Default Q&A agent |
-| #3 | `code-reviewer` | qa | Code review assistant |
-| #4 | `content-writer` | chat | Content creation assistant |
-| #5 | `customer-support` | chat | Customer support bot |
-| #6 | `data-analyst` | qa | Data analysis assistant |
-| #7 | `email-composer` | chat | Email writing assistant |
-| #8 | `research-assistant` | chat | Research and information gathering |
-| #9 | `sql-expert` | qa | SQL query assistant |
-| #10 | `summarizer` | qa | Text summarization agent |
-| #11 | `task-planner` | chat | Task planning assistant |
-| #12 | `translator` | qa | Language translation agent |
+| Serial | ID | Category | Sub-agents |
+|--------|-----|----------|------------|
+| #1 | `chat-agent` | chat | - |
+| #2 | `qa-agent` | qa | - |
+| #3 | `code-reviewer` | qa | - |
+| #4 | `content-writer` | chat | - |
+| #5 | `customer-support` | chat | - |
+| #6 | `data-analyst` | qa | - |
+| #7 | `email-composer` | chat | - |
+| #8 | `research-assistant` | chat | - |
+| #9 | `sql-expert` | qa | - |
+| #10 | `summarizer` | qa | - |
+| #11 | `task-planner` | chat | - |
+| #12 | `translator` | qa | - |
+| #13 | `project-manager` | chat | task-planner, data-analyst, summarizer |
+| #14 | `dev-lead` | chat | code-reviewer, research-assistant |
+| #15 | `tech-director` | chat | dev-lead, project-manager |
 
 ## Schema
 
@@ -152,7 +155,7 @@ model:
 |-------|------|----------|---------|-------------|
 | `vars` | string[] | No | `[]` | Variable names to load from .env |
 | `tools` | string[] | No | `[]` | Tool IDs (validated against registry) |
-| `sub_agents` | string[] | No | `[]` | Agent IDs for delegation |
+| `sub_agents` | string[] | No | `[]` | Agent IDs for delegation (must be acyclic) |
 | `features` | string[] | No | `[]` | Feature IDs |
 
 ## Operations
@@ -160,9 +163,12 @@ model:
 | Operation | Description | CLI Command |
 |-----------|-------------|-------------|
 | **ls** | List all agents with prefixed serials | `lk agent ls` |
-| **get** | Clone and deploy agent | `lk agent get #1 my-agent` |
+| **get** | Clone and deploy agent (creates `copy-of-<name>`) | `lk agent get #1` |
 | **set** | Update agent on platform | `lk agent set @1` |
 | **chat** | Interactive chat session | `lk agent chat @1` |
+| **rm** | Delete local agent | `lk agent rm @1` |
+| **tree** | Show agent dependency tree | `lk agent tree @1` |
+| **doctor** | Validate all local agents | `lk agent doctor` |
 
 ## Serial Numbers
 

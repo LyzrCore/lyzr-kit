@@ -17,9 +17,12 @@ specs/
 |---------|-------------|
 | `lk auth` | Configure API credentials |
 | `lk ls` | List agents (two tables) |
-| `lk get <source> [id]` | Clone and deploy agent |
+| `lk get <source>` | Clone and deploy agent (creates `copy-of-<name>`) |
 | `lk set <id>` | Update agent on platform |
 | `lk chat <id>` | Interactive chat session |
+| `lk rm <id>` | Delete local agent |
+| `lk tree [id]` | Show agent dependency tree |
+| `lk doctor` | Validate all local agents |
 
 `agent` resource is optional. Serial numbers are context-aware (get → built-in, set/chat → local).
 
@@ -38,6 +41,6 @@ specs/
 |-------|-------|--------|
 | 1 | Agents, CLI, storage | ✅ Done |
 | 2 | Chat experience, WebSocket | ✅ Done |
-| 3 | Sub-agents | Pending |
-| 4 | Tools | Stub |
-| 5 | Features | Stub |
+| 3 | Sub-agents | ✅ Done |
+| 4 | Tools | Pending |
+| 5 | Features | Pending |
