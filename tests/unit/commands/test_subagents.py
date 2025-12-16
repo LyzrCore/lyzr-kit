@@ -543,7 +543,8 @@ class TestAgentRmTreeFlag:
         """rm --help should show --tree option."""
         result = runner.invoke(app, ["agent", "rm", "--help"])
         assert result.exit_code == 0
-        assert "--tree" in result.output
+        # Check for 'tree' - ANSI codes may split '--tree' in output
+        assert "tree" in result.output.lower()
         assert "sub-agents" in result.output.lower()
 
     def test_rm_shows_sub_agents_hint(self):
@@ -558,7 +559,8 @@ class TestAgentRmTreeFlag:
 
         result = runner.invoke(app, ["agent", "rm", "parent-for-rm"])
         assert "sub-agent" in result.output.lower()
-        assert "--tree" in result.output
+        # Check for 'tree' - ANSI codes may split '--tree' in output
+        assert "tree" in result.output.lower()
 
     def test_rm_tree_deletes_sub_agents(self):
         """rm --tree should delete agent and sub-agents."""
